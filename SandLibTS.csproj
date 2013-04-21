@@ -87,7 +87,7 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" />
   <PropertyGroup>
-    <PostBuildEvent>tsc --out "$(ProjectDir)TestGame.js" "$(ProjectDir)TestGame\TestGame.ts
-</PostBuildEvent>
+    <PostBuildEvent>tsc --out "$(ProjectDir)Release\TestGame.js" "$(ProjectDir)TestGame\TestGame.ts
+tsc --out "$(ProjectDir)Release\SandLib.js" "$(ProjectDir)SandLib\Core\Engine.ts</PostBuildEvent>
   </PropertyGroup>
 </Project>

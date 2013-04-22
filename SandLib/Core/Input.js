@@ -9,6 +9,16 @@ var SandLib;
             x: 0,
             y: 0
         };
+        Input.lastMouseState = {
+            mouseButtons: new Array(),
+            x: 0,
+            y: 0
+        };
+        Input.mouseX = 0;
+        Input.mouseY = 0;
+        Input.MOUSE_LEFT = 0;
+        Input.MOUSE_MIDDLE = 1;
+        Input.MOUSE_RIGHT = 2;
         Input.keyUp = function keyUp(event) {
             Input.currentKeyStates[event.keyCode] = false;
         };
@@ -41,7 +51,8 @@ var SandLib;
                 Input.currentMouseState.x = event.pageX - oX;
                 Input.currentMouseState.y = event.pageY - oY;
             }
-            console.log(Input.currentMouseState.x + ":" + Input.currentMouseState.y);
+            Input.mouseX = Input.currentMouseState.x;
+            Input.mouseY = Input.currentMouseState.y;
         };
         Input.init = function init() {
             addEventListener("keydown", Input.keyDown);
@@ -51,6 +62,15 @@ var SandLib;
             addEventListener("mousemove", Input.mouseMove);
             Input.currentMouseState.x = 0;
             Input.currentMouseState.y = 0;
+        };
+        Input.isMouseBtnDown = function isMouseBtnDown(button) {
+            return Input.currentMouseState.mouseButtons[button];
+        };
+        Input.isMouseBtnJustDown = function isMouseBtnJustDown(button) {
+            if(Input.lastMouseState.mouseButtons[button] == false && Input.currentMouseState.mouseButtons[button] == true) {
+                return true;
+            }
+            return false;
         };
         Input.isKeyDown = function isKeyDown(keyCode) {
             var b = Input.currentKeyStates[keyCode];

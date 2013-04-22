@@ -12,6 +12,10 @@ module SandLib {
         static currentScene: Scene;
         static lastScene: Scene;
 
+        static width = 0;
+        static height = 0;
+        static fillColor:string = "#AAAAAA";
+
         static update() {
             Input.update();
             currentScene.update();            
@@ -23,6 +27,8 @@ module SandLib {
             Engine.currentScene = initialScene;
             Engine.canvas = canvas;
             Engine.context = canvas.getContext("2d");
+            Engine.width = canvas.width;
+            Engine.height = canvas.height;
             Input.init();
             requestAnimationFrame(update);
         }
@@ -42,7 +48,8 @@ module SandLib {
         static draw() {
             context.save();
             context.setTransform(1, 0, 0, 1, 0, 0);
-            context.clearRect(0, 0, canvas.width, canvas.height);           
+            context.fillStyle = fillColor;
+            context.fillRect(0, 0, canvas.width, canvas.height);           
             context.restore();
             currentScene.draw();
         }

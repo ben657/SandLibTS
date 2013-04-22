@@ -9,15 +9,23 @@ module SandLib {
 
     export class Input {
 
-        static currentKeyStates: bool[] = new bool[];
-        static lastKeyStates: bool[] = new bool[];
-        static currentMouseState: MouseState = { mouseButtons: new bool[], x: 0, y: 0 };
+        private static currentKeyStates: bool[] = new bool[];
+        private static lastKeyStates: bool[] = new bool[];
+        private static currentMouseState: MouseState = { mouseButtons: new bool[], x: 0, y: 0 };
+        private static lastMouseState: MouseState = { mouseButtons: new bool[], x: 0, y: 0 };
 
-        static keyUp(event: KeyboardEvent) {
+        static mouseX: number = 0;
+        static mouseY: number = 0;
+
+        static MOUSE_LEFT = 0;
+        static MOUSE_MIDDLE = 1;
+        static MOUSE_RIGHT = 2;
+
+        private static keyUp(event: KeyboardEvent) {
             currentKeyStates[event.keyCode] = false;
         }
 
-        static keyDown(event: KeyboardEvent) {
+        private static keyDown(event: KeyboardEvent) {
             if ([37, 38, 39, 40].indexOf(event.keyCode) == 0) {
                 event.preventDefault();
             }
@@ -25,15 +33,15 @@ module SandLib {
             currentKeyStates[event.keyCode] = true;
         }
 
-        static mouseUp(event: MouseEvent) {
+        private static mouseUp(event: MouseEvent) {
             currentMouseState.mouseButtons[event.button] = false;
         }
 
-        static mouseDown(event: MouseEvent) {
+        private static mouseDown(event: MouseEvent) {
             currentMouseState.mouseButtons[event.button] = true;
         }
 
-        static mouseMove(event: MouseEvent) {
+        private static mouseMove(event: MouseEvent) {
 
             var oX: number = 0;
             var oY: number = 0;
@@ -48,7 +56,8 @@ module SandLib {
                 currentMouseState.x = event.pageX - oX;
                 currentMouseState.y = event.pageY - oY;
             }
-            console.log(currentMouseState.x + ":" + currentMouseState.y);
+            mouseX = currentMouseState.x;
+            mouseY = currentMouseState.y;
         }
 
         static init() {
@@ -60,6 +69,17 @@ module SandLib {
 
             currentMouseState.x = 0;
             currentMouseState.y = 0;
+        }
+
+        static isMouseBtnDown(button: number) {
+            return currentMouseState.mouseButtons[button];
+        }
+
+        static isMouseBtnJustDown(button: number) {
+            if (lastMouseState.mouseButtons[button] == false && currentMouseState.mouseButtons[button] == true) {
+                return true;
+            }
+            return false;
         }
 
         static isKeyDown(keyCode: number) {

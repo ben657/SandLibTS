@@ -6,6 +6,9 @@ var SandLib;
         function Engine() { }
         Engine.images = {
         };
+        Engine.width = 0;
+        Engine.height = 0;
+        Engine.fillColor = "#AAAAAA";
         Engine.update = function update() {
             SandLib.Input.update();
             Engine.currentScene.update();
@@ -16,6 +19,8 @@ var SandLib;
             Engine.currentScene = initialScene;
             Engine.canvas = canvas;
             Engine.context = canvas.getContext("2d");
+            Engine.width = canvas.width;
+            Engine.height = canvas.height;
             SandLib.Input.init();
             requestAnimationFrame(Engine.update);
         };
@@ -33,7 +38,8 @@ var SandLib;
         Engine.draw = function draw() {
             Engine.context.save();
             Engine.context.setTransform(1, 0, 0, 1, 0, 0);
-            Engine.context.clearRect(0, 0, Engine.canvas.width, Engine.canvas.height);
+            Engine.context.fillStyle = Engine.fillColor;
+            Engine.context.fillRect(0, 0, Engine.canvas.width, Engine.canvas.height);
             Engine.context.restore();
             Engine.currentScene.draw();
         };

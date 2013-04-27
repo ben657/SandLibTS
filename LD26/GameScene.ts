@@ -4,6 +4,7 @@
 
 /// <reference path="Player.ts"/>
 /// <reference path="Platform.ts"/>
+/// <reference path="Coin.ts"/>
 
 module LD {
     export class GameScene extends SandLib.Scene {
@@ -37,13 +38,21 @@ module LD {
         }
 
         generatePlatform() {
+            var hasCoins: bool = Math.random() <= 0.5;
             var platformWidth:number = Math.random() * 100 + 300;
             var gap: number = Math.random() * 200 + 100;            
             this.add(new Platform(this.endX + gap, this.lastY, platformWidth, 200, this.platformCol));
+            if (hasCoins) {
+                console.log("ran");
+                var numCoins = Math.round(platformWidth / 30);
+                for (var i = 0; i < numCoins; i++) {
+                    this.add(new Coin(this.endX + gap + i*30 + 6, this.lastY - 17));
+                }
+            }            
             this.lastY = Math.random() * 100 + this.lastY - 50;
             this.endX += gap + platformWidth;
             if (this.lastY > this.maxY) { this.lastY = this.maxY; }
-            if (this.lastY < this.minY) { this.lastY = this.minY; }
+            if (this.lastY < this.minY) { this.lastY = this.minY; }            
         }
     }
 }

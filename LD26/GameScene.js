@@ -8,6 +8,7 @@ var __extends = this.__extends || function (d, b) {
 /// <reference path="../SandLib/UI/Button.ts"/>
 /// <reference path="Player.ts"/>
 /// <reference path="Platform.ts"/>
+/// <reference path="Coin.ts"/>
 var LD;
 (function (LD) {
     var GameScene = (function (_super) {
@@ -38,9 +39,17 @@ var LD;
             }
         };
         GameScene.prototype.generatePlatform = function () {
+            var hasCoins = Math.random() <= 0.5;
             var platformWidth = Math.random() * 100 + 300;
             var gap = Math.random() * 200 + 100;
             this.add(new LD.Platform(this.endX + gap, this.lastY, platformWidth, 200, this.platformCol));
+            if(hasCoins) {
+                console.log("ran");
+                var numCoins = Math.round(platformWidth / 30);
+                for(var i = 0; i < numCoins; i++) {
+                    this.add(new LD.Coin(this.endX + gap + i * 30 + 6, this.lastY - 17));
+                }
+            }
             this.lastY = Math.random() * 100 + this.lastY - 50;
             this.endX += gap + platformWidth;
             if(this.lastY > this.maxY) {

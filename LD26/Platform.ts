@@ -6,9 +6,13 @@
 module LD {
     export class Platform extends SandLib.Entity {
 
+        static LOC_BOTTOM: number = 0;
+        static LOC_TOP:number = 1;
+
         imageDat: ImageData;
         width: number = 0;
-        height:number = 0;
+        height: number = 0;
+        location:number = 0;
 
         constructor(x: number, y: number, width:number,height:number, color:SandLib.Color) {
             super(x, y);

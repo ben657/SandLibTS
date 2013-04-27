@@ -30,6 +30,10 @@ module SandLib {
             this.entities[this.entities.length] = entity;
         }
 
+        remove(entity: Entity) {
+            this.entities.splice(this.entities.indexOf(entity), 1);
+        }
+
         updateEntities() {
             for (var i = 0; i < this.entities.length; i++) {
                 this.entities[i].update();

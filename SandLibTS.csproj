@@ -35,6 +35,10 @@
     <TypeScriptCompile Include="SandLib\Core\EntityMoving.ts" />
     <TypeScriptCompile Include="LD26\Main.ts" />
     <TypeScriptCompile Include="LD26\GameScene.ts" />
+    <TypeScriptCompile Include="LD26\Coin.ts" />
+    <Content Include="LD26\Coin.js">
+      <DependentUpon>Coin.ts</DependentUpon>
+    </Content>
     <Content Include="LD26\GameScene.js">
       <DependentUpon>GameScene.ts</DependentUpon>
     </Content>

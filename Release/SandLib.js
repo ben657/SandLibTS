@@ -90,6 +90,9 @@ var SandLib;
         Scene.prototype.add = function (entity) {
             this.entities[this.entities.length] = entity;
         };
+        Scene.prototype.remove = function (entity) {
+            this.entities.splice(this.entities.indexOf(entity), 1);
+        };
         Scene.prototype.updateEntities = function () {
             for(var i = 0; i < this.entities.length; i++) {
                 this.entities[i].update();
@@ -142,6 +145,7 @@ var SandLib;
         };
         Input.keyDown = function keyDown(event) {
             if([
+                16, 
                 37, 
                 38, 
                 39, 

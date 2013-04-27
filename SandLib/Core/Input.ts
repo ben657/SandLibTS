@@ -70,7 +70,7 @@ module SandLib {
         }
 
         private static keyDown(event: KeyboardEvent) {
-            if ([37, 38, 39, 40].indexOf(event.keyCode) == 0) {
+            if ([16, 37, 38, 39, 40].indexOf(event.keyCode) == 0) {
                 event.preventDefault();
             }
             if (Input.keyStates[event.keyCode] == false || Input.keyStates[event.keyCode] == null) {

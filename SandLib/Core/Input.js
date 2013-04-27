@@ -26,6 +26,7 @@ var SandLib;
         };
         Input.keyDown = function keyDown(event) {
             if([
+                16, 
                 37, 
                 38, 
                 39, 

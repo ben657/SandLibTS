@@ -14,6 +14,7 @@ var LD;
                 _super.call(this, x, y);
             this.width = 0;
             this.height = 0;
+            this.location = 0;
             this.width = width;
             this.height = height;
             this.imageDat = SandLib.Engine.context.createImageData(width, height);
@@ -24,6 +25,8 @@ var LD;
                 this.imageDat.data[i + 3] = color.a;
             }
         }
+        Platform.LOC_BOTTOM = 0;
+        Platform.LOC_TOP = 1;
         Platform.prototype.update = function () {
         };
         Platform.prototype.getHitBox = function () {

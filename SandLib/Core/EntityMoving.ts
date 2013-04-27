@@ -1,4 +1,5 @@
 /// <reference path="Scene.ts"/>
+/// <reference path="Engine.ts"/>
 
 module SandLib {
     export class EntityMoving extends Entity {        
@@ -11,8 +12,8 @@ module SandLib {
 
         update() {
             super.update();
-            this.x += this.velocity.x;
-            this.y += this.velocity.y;
+            this.x += this.velocity.x * Engine.timeInterval;
+            this.y += this.velocity.y * Engine.timeInterval;
         }
     }
 }

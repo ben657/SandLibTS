@@ -5,6 +5,7 @@ module SandLib {
     export class Scene {
 
         entities: Entity[];
+        camera: Vector = { x: 0, y: 0 };
 
         constructor() {
             this.entities = [];
@@ -12,6 +13,17 @@ module SandLib {
 
         init() {
 
+        }
+
+        getAll(type: any) {
+            var returnArray: Entity[] = new Entity[];
+
+            for (var i = 0; i < this.entities.length; i++) {
+                if (this.entities[i] instanceof type) {
+                    returnArray.push(this.entities[i]);
+                }
+            }
+            return returnArray;
         }
 
         add(entity: Entity) {

@@ -5,53 +5,58 @@ var __extends = this.__extends || function (d, b) {
 };
 /// <reference path="../SandLib/Core/Engine.ts"/>
 /// <reference path="../SandLib/Core/EntityMoving.ts"/>
-/// <reference path="Weapon.ts"/>
+/// <reference path="GameScene.ts"/>
 var LD;
 (function (LD) {
     var Player = (function (_super) {
         __extends(Player, _super);
         function Player(x, y) {
                 _super.call(this, x, y);
-            this.rotSpeed = 300;
-            this.movSpeed = 200;
-            this.weapons = new Array();
+            this.chetato = [
+                32, 
+                32, 
+                16, 
+                32, 
+                16
+            ];
+            this.gravity = 50;
+            this.jumpPow = 1000;
+            this.accel = 3;
+            this.maxVel = 800;
+            this.decel = 20;
+            this.cameraMoveZone = 100;
+            this.onGround = false;
             this.image = SandLib.Engine.getImage("LD26/player.png");
+            this.image.width = this.image.height = 32;
             var hb = this.getHitBox();
-            this.originX = 100;
+            this.originX = hb.width / 2;
             this.originY = hb.height / 2;
-            var weapon = new LD.Weapon(this);
-            //SandLib.Engine.currentScene.add(weapon);
-                    }
+            SandLib.Input.registerCheat(this.chetato, function () {
+                console.log("potato");
+                LD.GameScene.player.image = SandLib.Engine.getImage("LD26/potato.png");
+            });
+        }
         Player.prototype.update = function () {
-            SandLib.Engine.debugText["Player"] = this.x + ":" + this.y;
-            var interval = SandLib.Engine.timeInterval;
-            if(SandLib.Input.isKeyDown(39)) {
-                this.rotation += this.rotSpeed * interval;
-            }
-            if(SandLib.Input.isKeyDown(37)) {
-                this.rotation -= this.rotSpeed * interval;
-            }
             //W:87 S:83 A:65 D:68
-            this.velocity = {
-                x: 0,
-                y: 0
-            };
-            if(SandLib.Input.isKeyDown(87)) {
-                this.velocity.y = -this.movSpeed * interval;
+            this.velocity.y += this.gravity;
+            if(SandLib.Input.isKeyJustDown(32) && this.onGround) {
+                this.velocity.y -= this.jumpPow;
+                this.onGround = false;
             }
-            if(SandLib.Input.isKeyDown(83)) {
-                this.velocity.y = this.movSpeed * interval;
+            this.velocity.x += this.accel;
+            if(this.velocity.x > this.maxVel) {
+                this.velocity.x = this.maxVel;
             }
-            if(SandLib.Input.isKeyDown(65)) {
-                this.velocity.x = -this.movSpeed * interval;
-            }
-            if(SandLib.Input.isKeyDown(68)) {
-                this.velocity.x = this.movSpeed * interval;
+            if(this.x > this.cameraMoveZone) {
+                SandLib.Engine.currentScene.camera.x = this.x - this.cameraMoveZone;
             }
             _super.prototype.update.call(this);
         };
+        Player.prototype.draw = function () {
+            _super.prototype.draw.call(this);
+        };
         Player.prototype.getHitBox = function () {
-            return new SandLib.HitBox(this.x, this.y, 32, 32);
+            return new SandLib.HitBox(this.x, this.y, this.image.height, this.image.width);
         };
         return Player;
     })(SandLib.EntityMoving);

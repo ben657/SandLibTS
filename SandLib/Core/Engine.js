@@ -6,6 +6,7 @@ var SandLib;
         function Engine() { }
         Engine.debugText = {
         };
+        Engine.debugTextCol = "#000000";
         Engine.images = {
         };
         Engine.width = 0;
@@ -21,8 +22,8 @@ var SandLib;
             Engine.currentScene.update();
             Engine.draw();
             Engine.debugText["Interval"] = Engine.timeInterval.toString();
-            //requestAnimationFrame(update);
-                    };
+            requestAnimationFrame(Engine.update);
+        };
         Engine.init = function init(initialScene, canvas) {
             Engine.currentScene = initialScene;
             Engine.canvas = canvas;
@@ -31,8 +32,9 @@ var SandLib;
             Engine.height = canvas.height;
             SandLib.Input.init();
             Engine.currentScene.init();
-            setInterval(Engine.update, 16);
-        };
+            requestAnimationFrame(Engine.update);
+            //setInterval(update, 16);
+                    };
         Engine.initTouch = function initTouch() {
             SandLib.Input.preventTouchDefault = true;
         };
@@ -47,6 +49,20 @@ var SandLib;
             }
             return img;
         };
+        Engine.normalizeVector = function normalizeVector(vector) {
+            var length = Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2));
+            if(length == 0) {
+                return {
+                    x: 0,
+                    y: 0
+                };
+            }
+            var newVector = {
+                x: vector.x / length,
+                y: vector.y / length
+            };
+            return newVector;
+        };
         Engine.draw = function draw() {
             Engine.context.save();
             Engine.context.setTransform(1, 0, 0, 1, 0, 0);
@@ -54,13 +70,12 @@ var SandLib;
             Engine.context.fillRect(0, 0, Engine.canvas.width, Engine.canvas.height);
             Engine.context.restore();
             Engine.currentScene.draw();
-            Engine.context.fillStyle = "'#000000";
+            Engine.context.fillStyle = Engine.debugTextCol;
             Engine.context.font = "20px Arial";
             Engine.context.textAlign = "left";
             var i = 0;
             for(var key in Engine.debugText) {
                 Engine.context.fillText(key + ": " + Engine.debugText[key], 5, (i + 1) * 20);
-                //console.log(key + ": " + debugText[key]);
                 i++;
             }
         };

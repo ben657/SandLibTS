@@ -9,7 +9,7 @@ var LD;
             canvas.width = 960;
             canvas.height = 540;
             document.body.appendChild(canvas);
-            SandLib.Engine.fillColor = "#FFC37F";
+            SandLib.Engine.fillColor = "#000000";
             SandLib.Engine.init(new LD.GameScene(), canvas);
         }
         return Main;

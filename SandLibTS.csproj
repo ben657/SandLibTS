@@ -41,9 +41,9 @@
     <Content Include="LD26\Main.js">
       <DependentUpon>Main.ts</DependentUpon>
     </Content>
-    <TypeScriptCompile Include="LD26\Weapon.ts" />
-    <Content Include="LD26\Weapon.js">
-      <DependentUpon>Weapon.ts</DependentUpon>
+    <TypeScriptCompile Include="LD26\Platform.ts" />
+    <Content Include="LD26\Platform.js">
+      <DependentUpon>Platform.ts</DependentUpon>
     </Content>
     <Content Include="SandLib\Core\EntityMoving.js">
       <DependentUpon>EntityMoving.ts</DependentUpon>

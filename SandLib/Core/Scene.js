@@ -4,9 +4,22 @@ var SandLib;
 (function (SandLib) {
     var Scene = (function () {
         function Scene() {
+            this.camera = {
+                x: 0,
+                y: 0
+            };
             this.entities = [];
         }
         Scene.prototype.init = function () {
+        };
+        Scene.prototype.getAll = function (type) {
+            var returnArray = new Array();
+            for(var i = 0; i < this.entities.length; i++) {
+                if(this.entities[i] instanceof type) {
+                    returnArray.push(this.entities[i]);
+                }
+            }
+            return returnArray;
         };
         Scene.prototype.add = function (entity) {
             this.entities[this.entities.length] = entity;

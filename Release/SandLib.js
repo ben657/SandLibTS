@@ -35,6 +35,7 @@ var SandLib;
 (function (SandLib) {
     var Entity = (function () {
         function Entity(x, y) {
+            this.scale = 1;
             this.originX = 0;
             this.originY = 0;
             this.rotation = 0;
@@ -43,16 +44,19 @@ var SandLib;
         }
         Entity.prototype.update = function () {
         };
+        Entity.prototype.isOnScreen = function () {
+            var cam = SandLib.Engine.currentScene.camera;
+            return (this.x + this.getHitBox().width > cam.x && this.x < cam.x + SandLib.Engine.width);
+        };
         Entity.prototype.draw = function () {
             if(this.rotation != 0) {
-                console.log("ran");
                 SandLib.Engine.context.save();
-                SandLib.Engine.context.translate(this.x + this.originX, this.y + this.originY);
+                SandLib.Engine.context.translate(this.x - SandLib.Engine.currentScene.camera.x + this.originX, this.y - SandLib.Engine.currentScene.camera.y + this.originY);
                 SandLib.Engine.context.rotate(this.rotation * Math.PI / 180);
-                SandLib.Engine.context.drawImage(this.image, -this.originX, -this.originY);
+                SandLib.Engine.context.drawImage(this.image, -this.originX, -this.originY, this.getHitBox().width * this.scale, this.getHitBox().height * this.scale);
                 SandLib.Engine.context.restore();
             } else {
-                SandLib.Engine.context.drawImage(this.image, this.x, this.y);
+                SandLib.Engine.context.drawImage(this.image, this.x - SandLib.Engine.currentScene.camera.x, this.y - SandLib.Engine.currentScene.camera.y);
             }
         };
         Entity.prototype.getHitBox = function () {
@@ -66,9 +70,22 @@ var SandLib;
 (function (SandLib) {
     var Scene = (function () {
         function Scene() {
+            this.camera = {
+                x: 0,
+                y: 0
+            };
             this.entities = [];
         }
         Scene.prototype.init = function () {
+        };
+        Scene.prototype.getAll = function (type) {
+            var returnArray = new Array();
+            for(var i = 0; i < this.entities.length; i++) {
+                if(this.entities[i] instanceof type) {
+                    returnArray.push(this.entities[i]);
+                }
+            }
+            return returnArray;
         };
         Scene.prototype.add = function (entity) {
             this.entities[this.entities.length] = entity;
@@ -113,6 +130,8 @@ var SandLib;
         Input.newMouseBtns = new Array();
         Input.bufferMouseBtns = new Array();
         Input.bufferNewMouseBtns = new Array();
+        Input.onCheat = function onCheat() {
+        };
         Input.mouseX = 0;
         Input.mouseY = 0;
         Input.MOUSE_LEFT = 0;
@@ -132,6 +151,21 @@ var SandLib;
             }
             if(Input.keyStates[event.keyCode] == false || Input.keyStates[event.keyCode] == null) {
                 Input.bufferNewKeyStates[event.keyCode] = true;
+                if(Input.cheatCode != null) {
+                    Input.lastPresses.push(event.keyCode);
+                    if(Input.lastPresses.length >= 5) {
+                        var last5 = Input.lastPresses.slice(Input.lastPresses.length - Input.cheatCode.length, Input.lastPresses.length);
+                        var numRight = 0;
+                        for(var i = 0; i < last5.length; i++) {
+                            if(last5[i] == Input.cheatCode[i]) {
+                                numRight++;
+                            }
+                        }
+                        if(numRight == Input.cheatCode.length) {
+                            Input.onCheat();
+                        }
+                    }
+                }
             }
             Input.bufferKeyStates[event.keyCode] = true;
         };
@@ -187,6 +221,11 @@ var SandLib;
             }
             return b;
         };
+        Input.registerCheat = function registerCheat(keys, onCheat) {
+            Input.onCheat = onCheat;
+            Input.cheatCode = keys;
+            Input.lastPresses = new Array();
+        };
         Input.update = function update() {
             Input.keyStates = Input.bufferKeyStates;
             Input.newKeyStates = Input.bufferNewKeyStates;
@@ -205,6 +244,7 @@ var SandLib;
         function Engine() { }
         Engine.debugText = {
         };
+        Engine.debugTextCol = "#000000";
         Engine.images = {
         };
         Engine.width = 0;
@@ -220,6 +260,7 @@ var SandLib;
             Engine.currentScene.update();
             Engine.draw();
             Engine.debugText["Interval"] = Engine.timeInterval.toString();
+            requestAnimationFrame(Engine.update);
         };
         Engine.init = function init(initialScene, canvas) {
             Engine.currentScene = initialScene;
@@ -229,7 +270,7 @@ var SandLib;
             Engine.height = canvas.height;
             SandLib.Input.init();
             Engine.currentScene.init();
-            setInterval(Engine.update, 16);
+            requestAnimationFrame(Engine.update);
         };
         Engine.initTouch = function initTouch() {
             SandLib.Input.preventTouchDefault = true;
@@ -245,6 +286,20 @@ var SandLib;
             }
             return img;
         };
+        Engine.normalizeVector = function normalizeVector(vector) {
+            var length = Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2));
+            if(length == 0) {
+                return {
+                    x: 0,
+                    y: 0
+                };
+            }
+            var newVector = {
+                x: vector.x / length,
+                y: vector.y / length
+            };
+            return newVector;
+        };
         Engine.draw = function draw() {
             Engine.context.save();
             Engine.context.setTransform(1, 0, 0, 1, 0, 0);
@@ -252,7 +307,7 @@ var SandLib;
             Engine.context.fillRect(0, 0, Engine.canvas.width, Engine.canvas.height);
             Engine.context.restore();
             Engine.currentScene.draw();
-            Engine.context.fillStyle = "'#000000";
+            Engine.context.fillStyle = Engine.debugTextCol;
             Engine.context.font = "20px Arial";
             Engine.context.textAlign = "left";
             var i = 0;

@@ -52,14 +52,18 @@ module SandLib {
         private static mouseBtns: bool[] = new bool[];
         private static newMouseBtns: bool[] = new bool[];
         private static bufferMouseBtns: bool[] = new bool[];
-        private static bufferNewMouseBtns:bool[] = new bool[];
+        private static bufferNewMouseBtns: bool[] = new bool[];
+
+        private static cheatCode: number[];
+        private static lastPresses: number[];
+        private static onCheat(){};
 
         static mouseX: number = 0;
         static mouseY: number = 0;
 
         static MOUSE_LEFT = 0;
         static MOUSE_MIDDLE = 1;
-        static MOUSE_RIGHT = 2;
+        static MOUSE_RIGHT = 2;        
 
         private static keyUp(event: KeyboardEvent) {
             bufferKeyStates[event.keyCode] = false;
@@ -71,6 +75,21 @@ module SandLib {
             }
             if (Input.keyStates[event.keyCode] == false || Input.keyStates[event.keyCode] == null) {
                 Input.bufferNewKeyStates[event.keyCode] = true;
+                if (Input.cheatCode != null) {
+                    Input.lastPresses.push(event.keyCode);
+                    if (Input.lastPresses.length >= 5) {                        
+                        var last5: number[] = Input.lastPresses.slice(Input.lastPresses.length - Input.cheatCode.length, Input.lastPresses.length);
+                        var numRight: number = 0;
+                        for (var i = 0; i < last5.length; i++) {
+                            if (last5[i] == Input.cheatCode[i]) {
+                                numRight++;
+                            }
+                        }
+                        if (numRight == Input.cheatCode.length) {
+                            Input.onCheat();
+                        }
+                    }
+                }
             }
             Input.bufferKeyStates[event.keyCode] = true;
         }
@@ -134,6 +153,12 @@ module SandLib {
                 return false;
             }
             return b;
+        }
+
+        static registerCheat(keys: number[], onCheat:any) {
+            Input.onCheat = onCheat;
+            Input.cheatCode = keys;
+            Input.lastPresses = new number[];
         }
 
         static update() {            

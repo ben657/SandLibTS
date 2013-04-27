@@ -35,6 +35,7 @@ var SandLib;
 (function (SandLib) {
     var Entity = (function () {
         function Entity(x, y) {
+            this.scale = 1;
             this.originX = 0;
             this.originY = 0;
             this.rotation = 0;
@@ -43,16 +44,19 @@ var SandLib;
         }
         Entity.prototype.update = function () {
         };
+        Entity.prototype.isOnScreen = function () {
+            var cam = SandLib.Engine.currentScene.camera;
+            return (this.x + this.getHitBox().width > cam.x && this.x < cam.x + SandLib.Engine.width);
+        };
         Entity.prototype.draw = function () {
             if(this.rotation != 0) {
-                console.log("ran");
                 SandLib.Engine.context.save();
-                SandLib.Engine.context.translate(this.x + this.originX, this.y + this.originY);
+                SandLib.Engine.context.translate(this.x - SandLib.Engine.currentScene.camera.x + this.originX, this.y - SandLib.Engine.currentScene.camera.y + this.originY);
                 SandLib.Engine.context.rotate(this.rotation * Math.PI / 180);
-                SandLib.Engine.context.drawImage(this.image, -this.originX, -this.originY);
+                SandLib.Engine.context.drawImage(this.image, -this.originX, -this.originY, this.getHitBox().width * this.scale, this.getHitBox().height * this.scale);
                 SandLib.Engine.context.restore();
             } else {
-                SandLib.Engine.context.drawImage(this.image, this.x, this.y);
+                SandLib.Engine.context.drawImage(this.image, this.x - SandLib.Engine.currentScene.camera.x, this.y - SandLib.Engine.currentScene.camera.y);
             }
         };
         Entity.prototype.getHitBox = function () {
@@ -66,9 +70,22 @@ var SandLib;
 (function (SandLib) {
     var Scene = (function () {
         function Scene() {
+            this.camera = {
+                x: 0,
+                y: 0
+            };
             this.entities = [];
         }
         Scene.prototype.init = function () {
+        };
+        Scene.prototype.getAll = function (type) {
+            var returnArray = new Array();
+            for(var i = 0; i < this.entities.length; i++) {
+                if(this.entities[i] instanceof type) {
+                    returnArray.push(this.entities[i]);
+                }
+            }
+            return returnArray;
         };
         Scene.prototype.add = function (entity) {
             this.entities[this.entities.length] = entity;
@@ -113,6 +130,8 @@ var SandLib;
         Input.newMouseBtns = new Array();
         Input.bufferMouseBtns = new Array();
         Input.bufferNewMouseBtns = new Array();
+        Input.onCheat = function onCheat() {
+        };
         Input.mouseX = 0;
         Input.mouseY = 0;
         Input.MOUSE_LEFT = 0;
@@ -132,6 +151,21 @@ var SandLib;
             }
             if(Input.keyStates[event.keyCode] == false || Input.keyStates[event.keyCode] == null) {
                 Input.bufferNewKeyStates[event.keyCode] = true;
+                if(Input.cheatCode != null) {
+                    Input.lastPresses.push(event.keyCode);
+                    if(Input.lastPresses.length >= 5) {
+                        var last5 = Input.lastPresses.slice(Input.lastPresses.length - Input.cheatCode.length, Input.lastPresses.length);
+                        var numRight = 0;
+                        for(var i = 0; i < last5.length; i++) {
+                            if(last5[i] == Input.cheatCode[i]) {
+                                numRight++;
+                            }
+                        }
+                        if(numRight == Input.cheatCode.length) {
+                            Input.onCheat();
+                        }
+                    }
+                }
             }
             Input.bufferKeyStates[event.keyCode] = true;
         };
@@ -187,6 +221,11 @@ var SandLib;
             }
             return b;
         };
+        Input.registerCheat = function registerCheat(keys, onCheat) {
+            Input.onCheat = onCheat;
+            Input.cheatCode = keys;
+            Input.lastPresses = new Array();
+        };
         Input.update = function update() {
             Input.keyStates = Input.bufferKeyStates;
             Input.newKeyStates = Input.bufferNewKeyStates;
@@ -205,6 +244,7 @@ var SandLib;
         function Engine() { }
         Engine.debugText = {
         };
+        Engine.debugTextCol = "#000000";
         Engine.images = {
         };
         Engine.width = 0;
@@ -220,6 +260,7 @@ var SandLib;
             Engine.currentScene.update();
             Engine.draw();
             Engine.debugText["Interval"] = Engine.timeInterval.toString();
+            requestAnimationFrame(Engine.update);
         };
         Engine.init = function init(initialScene, canvas) {
             Engine.currentScene = initialScene;
@@ -229,7 +270,7 @@ var SandLib;
             Engine.height = canvas.height;
             SandLib.Input.init();
             Engine.currentScene.init();
-            setInterval(Engine.update, 16);
+            requestAnimationFrame(Engine.update);
         };
         Engine.initTouch = function initTouch() {
             SandLib.Input.preventTouchDefault = true;
@@ -245,6 +286,20 @@ var SandLib;
             }
             return img;
         };
+        Engine.normalizeVector = function normalizeVector(vector) {
+            var length = Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2));
+            if(length == 0) {
+                return {
+                    x: 0,
+                    y: 0
+                };
+            }
+            var newVector = {
+                x: vector.x / length,
+                y: vector.y / length
+            };
+            return newVector;
+        };
         Engine.draw = function draw() {
             Engine.context.save();
             Engine.context.setTransform(1, 0, 0, 1, 0, 0);
@@ -252,7 +307,7 @@ var SandLib;
             Engine.context.fillRect(0, 0, Engine.canvas.width, Engine.canvas.height);
             Engine.context.restore();
             Engine.currentScene.draw();
-            Engine.context.fillStyle = "'#000000";
+            Engine.context.fillStyle = Engine.debugTextCol;
             Engine.context.font = "20px Arial";
             Engine.context.textAlign = "left";
             var i = 0;
@@ -347,8 +402,8 @@ var SandLib;
         }
         EntityMoving.prototype.update = function () {
             _super.prototype.update.call(this);
-            this.x += this.velocity.x;
-            this.y += this.velocity.y;
+            this.x += this.velocity.x * SandLib.Engine.timeInterval;
+            this.y += this.velocity.y * SandLib.Engine.timeInterval;
         };
         return EntityMoving;
     })(SandLib.Entity);
@@ -356,72 +411,54 @@ var SandLib;
 })(SandLib || (SandLib = {}));
 var LD;
 (function (LD) {
-    var Weapon = (function (_super) {
-        __extends(Weapon, _super);
-        function Weapon(player) {
-                _super.call(this, 0, 0);
-            this.player = player;
-            this.image = SandLib.Engine.getImage("LD26/cannon.png");
-        }
-        Weapon.prototype.update = function () {
-            this.rotation = this.player.rotation;
-            this.x = (this.player.x - this.getHitBox().width / 2) + this.player.getHitBox().width / 2;
-            this.y = this.player.y - this.player.getHitBox().height / 2;
-            this.originX = (this.player.x + this.player.originX) - (this.x + this.getHitBox().width / 2);
-            console.log((this.player.y + this.player.originY) - (this.y + this.getHitBox().height));
-            this.originY = (this.player.y + this.player.originY) - (this.y + this.getHitBox().height);
-        };
-        Weapon.prototype.getHitBox = function () {
-            return new SandLib.HitBox(this.x, this.y, 4, 16);
-        };
-        return Weapon;
-    })(SandLib.Entity);
-    LD.Weapon = Weapon;    
-})(LD || (LD = {}));
-var LD;
-(function (LD) {
     var Player = (function (_super) {
         __extends(Player, _super);
         function Player(x, y) {
                 _super.call(this, x, y);
-            this.rotSpeed = 300;
-            this.movSpeed = 200;
-            this.weapons = new Array();
+            this.chetato = [
+                32, 
+                32, 
+                16, 
+                32, 
+                16
+            ];
+            this.gravity = 50;
+            this.jumpPow = 1000;
+            this.accel = 3;
+            this.maxVel = 800;
+            this.decel = 20;
+            this.cameraMoveZone = 100;
+            this.onGround = false;
             this.image = SandLib.Engine.getImage("LD26/player.png");
+            this.image.width = this.image.height = 32;
             var hb = this.getHitBox();
-            this.originX = 100;
+            this.originX = hb.width / 2;
             this.originY = hb.height / 2;
-            var weapon = new LD.Weapon(this);
+            SandLib.Input.registerCheat(this.chetato, function () {
+                console.log("potato");
+                LD.GameScene.player.image = SandLib.Engine.getImage("LD26/potato.png");
+            });
         }
         Player.prototype.update = function () {
-            SandLib.Engine.debugText["Player"] = this.x + ":" + this.y;
-            var interval = SandLib.Engine.timeInterval;
-            if(SandLib.Input.isKeyDown(39)) {
-                this.rotation += this.rotSpeed * interval;
+            this.velocity.y += this.gravity;
+            if(SandLib.Input.isKeyJustDown(32) && this.onGround) {
+                this.velocity.y -= this.jumpPow;
+                this.onGround = false;
             }
-            if(SandLib.Input.isKeyDown(37)) {
-                this.rotation -= this.rotSpeed * interval;
+            this.velocity.x += this.accel;
+            if(this.velocity.x > this.maxVel) {
+                this.velocity.x = this.maxVel;
             }
-            this.velocity = {
-                x: 0,
-                y: 0
-            };
-            if(SandLib.Input.isKeyDown(87)) {
-                this.velocity.y = -this.movSpeed * interval;
-            }
-            if(SandLib.Input.isKeyDown(83)) {
-                this.velocity.y = this.movSpeed * interval;
-            }
-            if(SandLib.Input.isKeyDown(65)) {
-                this.velocity.x = -this.movSpeed * interval;
-            }
-            if(SandLib.Input.isKeyDown(68)) {
-                this.velocity.x = this.movSpeed * interval;
+            if(this.x > this.cameraMoveZone) {
+                SandLib.Engine.currentScene.camera.x = this.x - this.cameraMoveZone;
             }
             _super.prototype.update.call(this);
         };
+        Player.prototype.draw = function () {
+            _super.prototype.draw.call(this);
+        };
         Player.prototype.getHitBox = function () {
-            return new SandLib.HitBox(this.x, this.y, 32, 32);
+            return new SandLib.HitBox(this.x, this.y, this.image.height, this.image.width);
         };
         return Player;
     })(SandLib.EntityMoving);
@@ -429,17 +466,87 @@ var LD;
 })(LD || (LD = {}));
 var LD;
 (function (LD) {
+    var Platform = (function (_super) {
+        __extends(Platform, _super);
+        function Platform(x, y, width, height, color) {
+                _super.call(this, x, y);
+            this.width = 0;
+            this.height = 0;
+            this.width = width;
+            this.height = height;
+            this.imageDat = SandLib.Engine.context.createImageData(width, height);
+            for(var i = 0; i < this.imageDat.data.length; i += 4) {
+                this.imageDat.data[i] = color.r;
+                this.imageDat.data[i + 1] = color.g;
+                this.imageDat.data[i + 2] = color.b;
+                this.imageDat.data[i + 3] = color.a;
+            }
+        }
+        Platform.prototype.update = function () {
+        };
+        Platform.prototype.getHitBox = function () {
+            return new SandLib.HitBox(this.x, this.y, this.width, this.height);
+        };
+        Platform.prototype.draw = function () {
+            if(this.isOnScreen()) {
+                if((LD.GameScene.player.y + LD.GameScene.player.getHitBox().height) - this.y > 8 && this.x - (LD.GameScene.player.x + LD.GameScene.player.getHitBox().width) < 1 && this.x - LD.GameScene.player.x >= 0) {
+                    LD.GameScene.player.velocity.x = -10;
+                }
+                if(this.getHitBox().isHitboxIntersecting(LD.GameScene.player.getHitBox())) {
+                    LD.GameScene.player.y = this.y - LD.GameScene.player.getHitBox().height;
+                    LD.GameScene.player.velocity.y = 0;
+                    LD.GameScene.player.onGround = true;
+                }
+            }
+            if(this.isOnScreen()) {
+                SandLib.Engine.context.putImageData(this.imageDat, this.x - SandLib.Engine.currentScene.camera.x, this.y - SandLib.Engine.currentScene.camera.y);
+            }
+        };
+        return Platform;
+    })(SandLib.Entity);
+    LD.Platform = Platform;    
+})(LD || (LD = {}));
+var LD;
+(function (LD) {
     var GameScene = (function (_super) {
         __extends(GameScene, _super);
         function GameScene() {
                 _super.call(this);
+            this.endX = 0;
+            this.lastY = 500;
+            this.maxY = 530;
+            this.minY = 400;
+            this.platformCol = {
+                r: 200,
+                g: 200,
+                b: 200,
+                a: 255
+            };
         }
         GameScene.prototype.init = function () {
-            this.player = new LD.Player(10, 320);
-            this.add(this.player);
+            GameScene.player = new LD.Player(10, 320);
+            var platformWidth = Math.random() * 100 + 300;
+            this.add(new LD.Platform(this.endX, this.lastY, platformWidth, 200, this.platformCol));
+            this.add(GameScene.player);
         };
         GameScene.prototype.update = function () {
             _super.prototype.update.call(this);
+            if(this.endX < SandLib.Engine.width + SandLib.Engine.currentScene.camera.x) {
+                this.generatePlatform();
+            }
+        };
+        GameScene.prototype.generatePlatform = function () {
+            var platformWidth = Math.random() * 100 + 300;
+            var gap = Math.random() * 200 + 100;
+            this.add(new LD.Platform(this.endX + gap, this.lastY, platformWidth, 200, this.platformCol));
+            this.lastY = Math.random() * 100 + this.lastY - 50;
+            this.endX += gap + platformWidth;
+            if(this.lastY > this.maxY) {
+                this.lastY = this.maxY;
+            }
+            if(this.lastY < this.minY) {
+                this.lastY = this.minY;
+            }
         };
         return GameScene;
     })(SandLib.Scene);
@@ -453,7 +560,7 @@ var LD;
             canvas.width = 960;
             canvas.height = 540;
             document.body.appendChild(canvas);
-            SandLib.Engine.fillColor = "#FFC37F";
+            SandLib.Engine.fillColor = "#000000";
             SandLib.Engine.init(new LD.GameScene(), canvas);
         }
         return Main;

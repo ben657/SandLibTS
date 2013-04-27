@@ -4,6 +4,7 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 /// <reference path="Scene.ts"/>
+/// <reference path="Engine.ts"/>
 var SandLib;
 (function (SandLib) {
     var EntityMoving = (function (_super) {
@@ -17,8 +18,8 @@ var SandLib;
         }
         EntityMoving.prototype.update = function () {
             _super.prototype.update.call(this);
-            this.x += this.velocity.x;
-            this.y += this.velocity.y;
+            this.x += this.velocity.x * SandLib.Engine.timeInterval;
+            this.y += this.velocity.y * SandLib.Engine.timeInterval;
         };
         return EntityMoving;
     })(SandLib.Entity);

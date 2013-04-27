@@ -14,6 +14,8 @@ var SandLib;
         Input.newMouseBtns = new Array();
         Input.bufferMouseBtns = new Array();
         Input.bufferNewMouseBtns = new Array();
+        Input.onCheat = function onCheat() {
+        };
         Input.mouseX = 0;
         Input.mouseY = 0;
         Input.MOUSE_LEFT = 0;
@@ -33,6 +35,21 @@ var SandLib;
             }
             if(Input.keyStates[event.keyCode] == false || Input.keyStates[event.keyCode] == null) {
                 Input.bufferNewKeyStates[event.keyCode] = true;
+                if(Input.cheatCode != null) {
+                    Input.lastPresses.push(event.keyCode);
+                    if(Input.lastPresses.length >= 5) {
+                        var last5 = Input.lastPresses.slice(Input.lastPresses.length - Input.cheatCode.length, Input.lastPresses.length);
+                        var numRight = 0;
+                        for(var i = 0; i < last5.length; i++) {
+                            if(last5[i] == Input.cheatCode[i]) {
+                                numRight++;
+                            }
+                        }
+                        if(numRight == Input.cheatCode.length) {
+                            Input.onCheat();
+                        }
+                    }
+                }
             }
             Input.bufferKeyStates[event.keyCode] = true;
         };
@@ -87,6 +104,11 @@ var SandLib;
                 return false;
             }
             return b;
+        };
+        Input.registerCheat = function registerCheat(keys, onCheat) {
+            Input.onCheat = onCheat;
+            Input.cheatCode = keys;
+            Input.lastPresses = new Array();
         };
         Input.update = function update() {
             Input.keyStates = Input.bufferKeyStates;

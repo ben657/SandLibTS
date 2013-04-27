@@ -18,6 +18,7 @@ module SandLib {
     export class Engine {
 
         static debugText: { [index: string]: any; } = {};
+        static debugTextCol:string = "#000000";
 
         static canvas: HTMLCanvasElement;
         static context: CanvasRenderingContext2D;
@@ -42,7 +43,7 @@ module SandLib {
             currentScene.update();            
             draw();
             Engine.debugText["Interval"] = Engine.timeInterval.toString();
-            //requestAnimationFrame(update);
+            requestAnimationFrame(update);
         }
 
         static init(initialScene: Scene, canvas: HTMLCanvasElement) {            
@@ -53,7 +54,8 @@ module SandLib {
             Engine.height = canvas.height;
             Input.init();
             currentScene.init();
-            setInterval(update, 16);
+            requestAnimationFrame(update);
+            //setInterval(update, 16);
         }
 
         static initTouch() {
@@ -70,6 +72,15 @@ module SandLib {
                 });
             }
             return img;
+        }        
+
+        static normalizeVector(vector:Vector) {
+            var length = Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2));
+            if (length == 0) {
+                return { x: 0, y: 0 };
+            }
+            var newVector = { x: vector.x / length, y: vector.y / length };
+            return newVector;
         }
 
         static draw() {
@@ -79,13 +90,12 @@ module SandLib {
             context.fillRect(0, 0, canvas.width, canvas.height);           
             context.restore();
             currentScene.draw();
-            context.fillStyle = "'#000000";
+            context.fillStyle = Engine.debugTextCol;
             context.font = "20px Arial";
             context.textAlign = "left";
             var i = 0;
             for (var key in debugText) {                
-                context.fillText(key + ": " + debugText[key], 5, (i + 1) * 20);
-                //console.log(key + ": " + debugText[key]);
+                context.fillText(key + ": " + debugText[key], 5, (i + 1) * 20);              
                 i++;
             }
         }

@@ -10,6 +10,10 @@ module SandLib {
             this.entities = [];
         }
 
+        init() {
+
+        }
+
         add(entity: Entity) {
             this.entities[this.entities.length] = entity;
         }

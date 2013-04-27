@@ -265,3 +265,199 @@ var SandLib;
     })();
     SandLib.Engine = Engine;    
 })(SandLib || (SandLib = {}));
+var __extends = this.__extends || function (d, b) {
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var SandLib;
+(function (SandLib) {
+    var Component = (function (_super) {
+        __extends(Component, _super);
+        function Component(x, y, width, height) {
+                _super.call(this, x, y);
+            this.width = 0;
+            this.height = 0;
+            this.width = width;
+            this.height = height;
+        }
+        Component.prototype.getHitBox = function () {
+            return new SandLib.HitBox(this.x, this.y, this.width, this.height);
+        };
+        return Component;
+    })(SandLib.Entity);
+    SandLib.Component = Component;    
+})(SandLib || (SandLib = {}));
+var SandLib;
+(function (SandLib) {
+    var Button = (function (_super) {
+        __extends(Button, _super);
+        function Button(x, y, width, height, text, btnColor, txtColor, clickFunc) {
+                _super.call(this, x, y, width, height);
+            this.text = "";
+            this.textHeight = 12;
+            this.textPos = {
+                x: 0,
+                y: 0
+            };
+            this.text = text;
+            var textSize = SandLib.Engine.context.measureText(this.text);
+            this.textPos.x = (this.x + this.width / 2);
+            this.textPos.y = (this.y + this.height / 2) + (this.textHeight / 2);
+            this.clickFunc = clickFunc;
+            this.imageDat = SandLib.Engine.context.createImageData(this.width, this.height);
+            for(var i = 0; i < this.imageDat.data.length; i += 4) {
+                this.imageDat.data[i] = btnColor.r;
+                this.imageDat.data[i + 1] = btnColor.g;
+                this.imageDat.data[i + 2] = btnColor.b;
+                this.imageDat.data[i + 3] = btnColor.a;
+            }
+        }
+        Button.prototype.clickFunc = function () {
+        };
+        Button.prototype.update = function () {
+            _super.prototype.update.call(this);
+            if(SandLib.Input.isMouseBtnJustDown(SandLib.Input.MOUSE_LEFT)) {
+                if(this.getHitBox().isPointIntersecting(SandLib.Input.mouseX, SandLib.Input.mouseY)) {
+                    this.clickFunc();
+                }
+            }
+        };
+        Button.prototype.draw = function () {
+            SandLib.Engine.context.putImageData(this.imageDat, this.x, this.y);
+            SandLib.Engine.context.fillStyle = "'#000000";
+            SandLib.Engine.context.font = "12px Arial";
+            SandLib.Engine.context.textAlign = "center";
+            SandLib.Engine.context.fillText(this.text, this.textPos.x, this.textPos.y);
+        };
+        return Button;
+    })(SandLib.Component);
+    SandLib.Button = Button;    
+})(SandLib || (SandLib = {}));
+var SandLib;
+(function (SandLib) {
+    var EntityMoving = (function (_super) {
+        __extends(EntityMoving, _super);
+        function EntityMoving(x, y) {
+                _super.call(this, x, y);
+            this.velocity = {
+                x: 0,
+                y: 0
+            };
+        }
+        EntityMoving.prototype.update = function () {
+            _super.prototype.update.call(this);
+            this.x += this.velocity.x;
+            this.y += this.velocity.y;
+        };
+        return EntityMoving;
+    })(SandLib.Entity);
+    SandLib.EntityMoving = EntityMoving;    
+})(SandLib || (SandLib = {}));
+var LD;
+(function (LD) {
+    var Weapon = (function (_super) {
+        __extends(Weapon, _super);
+        function Weapon(player) {
+                _super.call(this, 0, 0);
+            this.player = player;
+            this.image = SandLib.Engine.getImage("LD26/cannon.png");
+        }
+        Weapon.prototype.update = function () {
+            this.rotation = this.player.rotation;
+            this.x = (this.player.x - this.getHitBox().width / 2) + this.player.getHitBox().width / 2;
+            this.y = this.player.y - this.player.getHitBox().height / 2;
+            this.originX = (this.player.x + this.player.originX) - (this.x + this.getHitBox().width / 2);
+            console.log((this.player.y + this.player.originY) - (this.y + this.getHitBox().height));
+            this.originY = (this.player.y + this.player.originY) - (this.y + this.getHitBox().height);
+        };
+        Weapon.prototype.getHitBox = function () {
+            return new SandLib.HitBox(this.x, this.y, 4, 16);
+        };
+        return Weapon;
+    })(SandLib.Entity);
+    LD.Weapon = Weapon;    
+})(LD || (LD = {}));
+var LD;
+(function (LD) {
+    var Player = (function (_super) {
+        __extends(Player, _super);
+        function Player(x, y) {
+                _super.call(this, x, y);
+            this.rotSpeed = 300;
+            this.movSpeed = 200;
+            this.weapons = new Array();
+            this.image = SandLib.Engine.getImage("LD26/player.png");
+            var hb = this.getHitBox();
+            this.originX = 100;
+            this.originY = hb.height / 2;
+            var weapon = new LD.Weapon(this);
+        }
+        Player.prototype.update = function () {
+            SandLib.Engine.debugText["Player"] = this.x + ":" + this.y;
+            var interval = SandLib.Engine.timeInterval;
+            if(SandLib.Input.isKeyDown(39)) {
+                this.rotation += this.rotSpeed * interval;
+            }
+            if(SandLib.Input.isKeyDown(37)) {
+                this.rotation -= this.rotSpeed * interval;
+            }
+            this.velocity = {
+                x: 0,
+                y: 0
+            };
+            if(SandLib.Input.isKeyDown(87)) {
+                this.velocity.y = -this.movSpeed * interval;
+            }
+            if(SandLib.Input.isKeyDown(83)) {
+                this.velocity.y = this.movSpeed * interval;
+            }
+            if(SandLib.Input.isKeyDown(65)) {
+                this.velocity.x = -this.movSpeed * interval;
+            }
+            if(SandLib.Input.isKeyDown(68)) {
+                this.velocity.x = this.movSpeed * interval;
+            }
+            _super.prototype.update.call(this);
+        };
+        Player.prototype.getHitBox = function () {
+            return new SandLib.HitBox(this.x, this.y, 32, 32);
+        };
+        return Player;
+    })(SandLib.EntityMoving);
+    LD.Player = Player;    
+})(LD || (LD = {}));
+var LD;
+(function (LD) {
+    var GameScene = (function (_super) {
+        __extends(GameScene, _super);
+        function GameScene() {
+                _super.call(this);
+        }
+        GameScene.prototype.init = function () {
+            this.player = new LD.Player(10, 320);
+            this.add(this.player);
+        };
+        GameScene.prototype.update = function () {
+            _super.prototype.update.call(this);
+        };
+        return GameScene;
+    })(SandLib.Scene);
+    LD.GameScene = GameScene;    
+})(LD || (LD = {}));
+var LD;
+(function (LD) {
+    var Main = (function () {
+        function Main() {
+            var canvas = document.createElement("canvas");
+            canvas.width = 960;
+            canvas.height = 540;
+            document.body.appendChild(canvas);
+            SandLib.Engine.fillColor = "#FFC37F";
+            SandLib.Engine.init(new LD.GameScene(), canvas);
+        }
+        return Main;
+    })();
+    LD.Main = Main;    
+})(LD || (LD = {}));
+new LD.Main();

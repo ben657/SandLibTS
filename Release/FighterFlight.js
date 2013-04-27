@@ -12,10 +12,8 @@ var SandLib;
             this.height = height;
         }
         HitBox.prototype.isPointIntersecting = function (x, y) {
-            if((this.x <= x) && (this.x + this.width >= x)) {
-                if((this.y <= y) && (this.y + this.height >= y)) {
-                    return true;
-                }
+            if(x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height) {
+                return true;
             }
             return false;
         };
@@ -35,25 +33,13 @@ var SandLib;
 (function (SandLib) {
     var Entity = (function () {
         function Entity(x, y) {
-            this.originX = 0;
-            this.originY = 0;
-            this.rotation = 0;
             this.x = x;
             this.y = y;
         }
         Entity.prototype.update = function () {
         };
         Entity.prototype.draw = function () {
-            if(this.rotation != 0) {
-                console.log("ran");
-                SandLib.Engine.context.save();
-                SandLib.Engine.context.translate(this.x + this.originX, this.y + this.originY);
-                SandLib.Engine.context.rotate(this.rotation * Math.PI / 180);
-                SandLib.Engine.context.drawImage(this.image, -this.originX, -this.originY);
-                SandLib.Engine.context.restore();
-            } else {
-                SandLib.Engine.context.drawImage(this.image, this.x, this.y);
-            }
+            SandLib.Engine.context.drawImage(this.image, this.x, this.y);
         };
         Entity.prototype.getHitBox = function () {
             return new SandLib.HitBox(this.x, this.y, 0, 0);
@@ -68,8 +54,6 @@ var SandLib;
         function Scene() {
             this.entities = [];
         }
-        Scene.prototype.init = function () {
-        };
         Scene.prototype.add = function (entity) {
             this.entities[this.entities.length] = entity;
         };
@@ -140,15 +124,22 @@ var SandLib;
         };
         Input.mouseDown = function mouseDown(event) {
             if(Input.mouseBtns[event.button] == false || Input.mouseBtns[event.button] == null) {
-                Input.bufferNewMouseBtns[event.button] = true;
+                Input.bufferNewKeyStates[event.button] = true;
             }
             Input.bufferMouseBtns[event.button] = true;
         };
         Input.mouseMove = function mouseMove(event) {
-            var rect = SandLib.Engine.canvas.getBoundingClientRect();
-            Input.mouseX = event.clientX - rect.left;
-            Input.mouseY = event.clientY - rect.top;
-            SandLib.Engine.debugText["Mouse"] = Input.mouseX + ":" + Input.mouseY;
+            var oX = 0;
+            var oY = 0;
+            var currentElement = SandLib.Engine.canvas;
+            do {
+                oX += currentElement.offsetLeft - currentElement.scrollLeft;
+                oY += currentElement.offsetTop - currentElement.scrollTop;
+            }while(currentElement = currentElement.offsetParent);
+            if(event.pageX - oX > 0 && event.pageX - oX < SandLib.Engine.canvas.width && event.pageY - oY > 0 && event.pageY - oY < SandLib.Engine.canvas.height) {
+                Input.mouseX = event.pageX - oX;
+                Input.mouseY = event.pageY - oY;
+            }
         };
         Input.init = function init() {
             addEventListener("keydown", Input.keyDown);
@@ -228,7 +219,6 @@ var SandLib;
             Engine.width = canvas.width;
             Engine.height = canvas.height;
             SandLib.Input.init();
-            Engine.currentScene.init();
             setInterval(Engine.update, 16);
         };
         Engine.initTouch = function initTouch() {
@@ -254,7 +244,6 @@ var SandLib;
             Engine.currentScene.draw();
             Engine.context.fillStyle = "'#000000";
             Engine.context.font = "20px Arial";
-            Engine.context.textAlign = "left";
             var i = 0;
             for(var key in Engine.debugText) {
                 Engine.context.fillText(key + ": " + Engine.debugText[key], 5, (i + 1) * 20);
@@ -265,3 +254,128 @@ var SandLib;
     })();
     SandLib.Engine = Engine;    
 })(SandLib || (SandLib = {}));
+var __extends = this.__extends || function (d, b) {
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var SandLib;
+(function (SandLib) {
+    var Component = (function (_super) {
+        __extends(Component, _super);
+        function Component(x, y, width, height) {
+                _super.call(this, x, y);
+            this.width = 0;
+            this.height = 0;
+        }
+        Component.prototype.getHitBox = function () {
+            return new SandLib.HitBox(this.x, this.y, this.width, this.height);
+        };
+        return Component;
+    })(SandLib.Entity);
+    SandLib.Component = Component;    
+})(SandLib || (SandLib = {}));
+var SandLib;
+(function (SandLib) {
+    var Button = (function (_super) {
+        __extends(Button, _super);
+        function Button(x, y, width, height, text, btnColor, txtColor) {
+                _super.call(this, x, y, width, height);
+            this.text = "";
+            this.text = text;
+            this.imageDat = SandLib.Engine.context.createImageData(this.width, this.height);
+            for(var i = 0; i < this.imageDat.data.length / 4; i++) {
+                this.imageDat.data[i] = btnColor.r;
+                this.imageDat.data[i + 1] = btnColor.g;
+                this.imageDat.data[i + 2] = btnColor.b;
+                this.imageDat.data[i + 3] = btnColor.a;
+            }
+        }
+        Button.prototype.draw = function () {
+            SandLib.Engine.context.putImageData(this.imageDat, this.x, this.y);
+        };
+        return Button;
+    })(SandLib.Component);
+    SandLib.Button = Button;    
+})(SandLib || (SandLib = {}));
+var SandLib;
+(function (SandLib) {
+    var EntityMoving = (function (_super) {
+        __extends(EntityMoving, _super);
+        function EntityMoving(x, y) {
+                _super.call(this, x, y);
+            this.velocity = {
+                x: 0,
+                y: 0
+            };
+        }
+        EntityMoving.prototype.update = function () {
+            _super.prototype.update.call(this);
+            this.x += this.velocity.x;
+            this.y += this.velocity.y;
+        };
+        return EntityMoving;
+    })(SandLib.Entity);
+    SandLib.EntityMoving = EntityMoving;    
+})(SandLib || (SandLib = {}));
+var FF;
+(function (FF) {
+    var Jet = (function (_super) {
+        __extends(Jet, _super);
+        function Jet(x, y) {
+                _super.call(this, x, y);
+        }
+        return Jet;
+    })(SandLib.EntityMoving);
+    FF.Jet = Jet;    
+})(FF || (FF = {}));
+var FF;
+(function (FF) {
+    var PlayerJet = (function (_super) {
+        __extends(PlayerJet, _super);
+        function PlayerJet(x, y) {
+                _super.call(this, x, y);
+            this.image = SandLib.Engine.getImage("FighterFlight/PlayerJet.png");
+        }
+        PlayerJet.prototype.update = function () {
+            SandLib.Engine.debugText["Jet"] = "test";
+            _super.prototype.update.call(this);
+            if(this.y < SandLib.Input.mouseY) {
+                this.y += 100 * SandLib.Engine.timeInterval;
+            } else if(this.y > SandLib.Input.mouseY) {
+                this.y -= 100 * SandLib.Engine.timeInterval;
+            }
+        };
+        return PlayerJet;
+    })(FF.Jet);
+    FF.PlayerJet = PlayerJet;    
+})(FF || (FF = {}));
+var FF;
+(function (FF) {
+    var GameScene = (function (_super) {
+        __extends(GameScene, _super);
+        function GameScene() {
+                _super.call(this);
+            this.player = new FF.PlayerJet(10, SandLib.Engine.height / 2);
+            console.log(SandLib.Engine.canvas == null);
+        }
+        return GameScene;
+    })(SandLib.Scene);
+    FF.GameScene = GameScene;    
+})(FF || (FF = {}));
+var FF;
+(function (FF) {
+    var Main = (function () {
+        function Main() {
+            var canvas = document.createElement("canvas");
+            canvas.width = 640;
+            canvas.height = 480;
+            document.body.appendChild(canvas);
+            var initialScene = new FF.GameScene();
+            SandLib.Engine.init(initialScene, canvas);
+        }
+        return Main;
+    })();
+    FF.Main = Main;    
+})(FF || (FF = {}));
+new FF.Main();

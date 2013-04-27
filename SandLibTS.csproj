@@ -21,20 +21,62 @@
     <TypeScriptCompile Include="SandLib\Core\Engine.ts" />
     <TypeScriptCompile Include="SandLib\Core\Entity.ts" />
     <TypeScriptCompile Include="SandLib\Core\Scene.ts" />
-    <TypeScriptCompile Include="TestGame\MainScene.ts" />
     <TypeScriptCompile Include="SandLib\Core\Input.ts" />
+    <TypeScriptCompile Include="FighterFlight\GameScene.ts" />
+    <TypeScriptCompile Include="FighterFlight\Main.ts" />
+    <TypeScriptCompile Include="FighterFlight\Entities\Jet.ts" />
+    <Content Include="FighterFlight\Entities\Jet.js">
+      <DependentUpon>Jet.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="FighterFlight\Entities\PlayerJet.ts" />
+    <Content Include="FighterFlight\Entities\PlayerJet.js">
+      <DependentUpon>PlayerJet.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="SandLib\Core\EntityMoving.ts" />
+    <TypeScriptCompile Include="LD26\Main.ts" />
+    <TypeScriptCompile Include="LD26\GameScene.ts" />
+    <Content Include="LD26\GameScene.js">
+      <DependentUpon>GameScene.ts</DependentUpon>
+    </Content>
+    <Content Include="LD26\Main.js">
+      <DependentUpon>Main.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="LD26\Weapon.ts" />
+    <Content Include="LD26\Weapon.js">
+      <DependentUpon>Weapon.ts</DependentUpon>
+    </Content>
+    <Content Include="SandLib\Core\EntityMoving.js">
+      <DependentUpon>EntityMoving.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="SandLib\Core\HitBox.ts" />
+    <Content Include="SandLib\Core\HitBox.js">
+      <DependentUpon>HitBox.ts</DependentUpon>
+    </Content>
     <Content Include="SandLib\Core\Input.js">
       <DependentUpon>Input.ts</DependentUpon>
     </Content>
-    <Content Include="TestGame\MainScene.js">
-      <DependentUpon>MainScene.ts</DependentUpon>
+    <TypeScriptCompile Include="SandLib\UI\Component.ts" />
+    <TypeScriptCompile Include="SandLib\UI\Button.ts" />
+    <Content Include="SandLib\UI\Button.js">
+      <DependentUpon>Button.ts</DependentUpon>
     </Content>
-    <Content Include="TestGame\TestGame.js">
-      <DependentUpon>TestGame.ts</DependentUpon>
+    <Content Include="SandLib\UI\Component.js">
+      <DependentUpon>Component.ts</DependentUpon>
     </Content>
-    <TypeScriptCompile Include="TestGame\TestGame.ts" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="TestProj\Main.ts" />
+    <Content Include="TestProj\Main.js">
+      <DependentUpon>Main.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="TestProj\MainScene.ts" />
+    <Content Include="TestProj\MainScene.js">
+      <DependentUpon>MainScene.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="LD26\Player.ts" />
+    <Content Include="LD26\Player.js">
+      <DependentUpon>Player.ts</DependentUpon>
+    </Content>
     <Content Include="web.config" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
@@ -87,7 +129,7 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" />
   <PropertyGroup>
-    <PostBuildEvent>tsc --out "$(ProjectDir)Release\TestGame.js" "$(ProjectDir)TestGame\TestGame.ts
+    <PostBuildEvent>tsc --out "$(ProjectDir)Release\LD26.js" "$(ProjectDir)LD26/Main.ts
 tsc --out "$(ProjectDir)Release\SandLib.js" "$(ProjectDir)SandLib\Core\Engine.ts</PostBuildEvent>
   </PropertyGroup>
 </Project>

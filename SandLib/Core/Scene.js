@@ -6,6 +6,8 @@ var SandLib;
         function Scene() {
             this.entities = [];
         }
+        Scene.prototype.init = function () {
+        };
         Scene.prototype.add = function (entity) {
             this.entities[this.entities.length] = entity;
         };

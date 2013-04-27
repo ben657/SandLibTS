@@ -2,7 +2,22 @@
 /// <reference path="Input.ts"/>
 
 module SandLib {
+
+    export interface Vector {
+        x: number;
+        y: number;
+    }
+
+    export interface Color {
+        r: number;
+        g: number;
+        b: number;
+        a: number;
+    }
+
     export class Engine {
+
+        static debugText: { [index: string]: any; } = {};
 
         static canvas: HTMLCanvasElement;
         static context: CanvasRenderingContext2D;
@@ -14,23 +29,35 @@ module SandLib {
 
         static width = 0;
         static height = 0;
-        static fillColor:string = "#AAAAAA";
+        static fillColor: string = "#AAAAAA";
+
+        private static lastUpdate = new Date();
+        static timeInterval:number = 0;
 
         static update() {
+            var now: Date = new Date();
+            timeInterval = (now.getTime() - Engine.lastUpdate.getTime()) / 1000;
+            Engine.lastUpdate = now;
             Input.update();
             currentScene.update();            
             draw();
-            requestAnimationFrame(update);
+            Engine.debugText["Interval"] = Engine.timeInterval.toString();
+            //requestAnimationFrame(update);
         }
 
-        static init(initialScene: Scene, canvas: HTMLCanvasElement) {
+        static init(initialScene: Scene, canvas: HTMLCanvasElement) {            
             Engine.currentScene = initialScene;
             Engine.canvas = canvas;
             Engine.context = canvas.getContext("2d");
             Engine.width = canvas.width;
             Engine.height = canvas.height;
             Input.init();
-            requestAnimationFrame(update);
+            currentScene.init();
+            setInterval(update, 16);
+        }
+
+        static initTouch() {
+            Input.preventTouchDefault = true;
         }
 
         static getImage(path: string): HTMLImageElement {
@@ -52,6 +79,15 @@ module SandLib {
             context.fillRect(0, 0, canvas.width, canvas.height);           
             context.restore();
             currentScene.draw();
+            context.fillStyle = "'#000000";
+            context.font = "20px Arial";
+            context.textAlign = "left";
+            var i = 0;
+            for (var key in debugText) {                
+                context.fillText(key + ": " + debugText[key], 5, (i + 1) * 20);
+                //console.log(key + ": " + debugText[key]);
+                i++;
+            }
         }
     }
 }

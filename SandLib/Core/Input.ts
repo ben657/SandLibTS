@@ -1,6 +1,39 @@
 
 module SandLib {
 
+    export interface Touch {
+        identifier: number;
+        target: EventTarget;
+        screenX: number;
+        screenY: number;
+        clientX: number;
+        clientY: number;
+        pageX: number;
+        pageY: number;
+    };
+
+    export interface TouchList {
+        length: number;
+        item(index: number): Touch;
+        identifiedTouch(identifier: number): Touch;
+    };
+
+    export interface TouchEvent extends UIEvent {
+        touches: TouchList;
+        targetTouches: TouchList;
+        changedTouches: TouchList;
+        altKey: bool;
+        metaKey: bool;
+        ctrlKey: bool;
+        shiftKey: bool;
+        initTouchEvent(type: string, canBubble: bool, cancelable: bool, view: AbstractView, detail: number, ctrlKey: bool, altKey: bool, shiftKey: bool, metaKey: bool, touches: TouchList, targetTouches: TouchList, changedTouches: TouchList);
+    };
+
+    declare var TouchEvent: {
+        prototype: TouchEvent;
+        new (): TouchEvent;
+    }
+
     export interface MouseState {
         mouseButtons: bool[];
         x: number;
@@ -9,10 +42,17 @@ module SandLib {
 
     export class Input {
 
-        private static currentKeyStates: bool[] = new bool[];
-        private static lastKeyStates: bool[] = new bool[];
-        private static currentMouseState: MouseState = { mouseButtons: new bool[], x: 0, y: 0 };
-        private static lastMouseState: MouseState = { mouseButtons: new bool[], x: 0, y: 0 };
+        private static preventTouchDefault:bool = false;
+
+        private static keyStates: bool[] = new bool[];
+        private static newKeyStates:bool[] = new bool[];
+        private static bufferKeyStates:bool[] = new bool[];
+        private static bufferNewKeyStates: bool[] = new bool[];
+
+        private static mouseBtns: bool[] = new bool[];
+        private static newMouseBtns: bool[] = new bool[];
+        private static bufferMouseBtns: bool[] = new bool[];
+        private static bufferNewMouseBtns:bool[] = new bool[];
 
         static mouseX: number = 0;
         static mouseY: number = 0;
@@ -22,43 +62,36 @@ module SandLib {
         static MOUSE_RIGHT = 2;
 
         private static keyUp(event: KeyboardEvent) {
-            currentKeyStates[event.keyCode] = false;
+            bufferKeyStates[event.keyCode] = false;
         }
 
         private static keyDown(event: KeyboardEvent) {
             if ([37, 38, 39, 40].indexOf(event.keyCode) == 0) {
                 event.preventDefault();
             }
-
-            currentKeyStates[event.keyCode] = true;
+            if (Input.keyStates[event.keyCode] == false || Input.keyStates[event.keyCode] == null) {
+                Input.bufferNewKeyStates[event.keyCode] = true;
+            }
+            Input.bufferKeyStates[event.keyCode] = true;
         }
 
         private static mouseUp(event: MouseEvent) {
-            currentMouseState.mouseButtons[event.button] = false;
+            Input.bufferMouseBtns[event.button] = false;
         }
 
         private static mouseDown(event: MouseEvent) {
-            currentMouseState.mouseButtons[event.button] = true;
-        }
-
-        private static mouseMove(event: MouseEvent) {
-
-            var oX: number = 0;
-            var oY: number = 0;
-            var currentElement: HTMLElement = Engine.canvas;
-
-            do {
-                oX += currentElement.offsetLeft - currentElement.scrollLeft;
-                oY += currentElement.offsetTop - currentElement.scrollTop;
-            } while (currentElement = <HTMLElement>currentElement.offsetParent);
-
-            if (event.pageX - oX > 0 && event.pageX - oX < Engine.canvas.width && event.pageY - oY > 0 && event.pageY - oY < Engine.canvas.height) {
-                currentMouseState.x = event.pageX - oX;
-                currentMouseState.y = event.pageY - oY;
+            if (Input.mouseBtns[event.button] == false || Input.mouseBtns[event.button] == null) {
+                Input.bufferNewMouseBtns[event.button] = true;
             }
-            mouseX = currentMouseState.x;
-            mouseY = currentMouseState.y;
+            Input.bufferMouseBtns[event.button] = true;            
         }
+
+        private static mouseMove(event: MouseEvent) {            
+            var rect: ClientRect = Engine.canvas.getBoundingClientRect();
+            Input.mouseX = event.clientX - rect.left;
+            Input.mouseY = event.clientY - rect.top;
+            Engine.debugText["Mouse"] = Input.mouseX + ":" + Input.mouseY;
+        }    
 
         static init() {
             addEventListener("keydown", keyDown);
@@ -67,40 +100,50 @@ module SandLib {
             addEventListener("mouseup", mouseUp);
             addEventListener("mousemove", mouseMove);
 
-            currentMouseState.x = 0;
-            currentMouseState.y = 0;
+            mouseX = 0;
+            mouseY = 0;
         }
 
         static isMouseBtnDown(button: number) {
-            return currentMouseState.mouseButtons[button];
-        }
-
-        static isMouseBtnJustDown(button: number) {
-            if (lastMouseState.mouseButtons[button] == false && currentMouseState.mouseButtons[button] == true) {
-                return true;
-            }
-            return false;
-        }
-
-        static isKeyDown(keyCode: number) {
-            var b: bool = currentKeyStates[keyCode];
+            var b: bool = Input.mouseBtns[button];
             if (b == null) {
                 return false;
             }
             return b;
         }
 
-        static isKeyJustDown(keyCode: number) {
-            var bNow: bool = currentKeyStates[keyCode];
-            var bThen: bool = lastKeyStates[keyCode];
-            if (bNow == true && (bThen == false || bThen == null)) {
-                return true;
+        static isMouseBtnJustDown(button: number) {
+            var b: bool = Input.newMouseBtns[button];
+            if (b == null) {
+                return false;
             }
-            return false;
+            return b;
         }
 
-        static update() {
-            lastKeyStates = currentKeyStates;
+        static isKeyDown(keyCode: number) {
+            var b: bool = keyStates[keyCode];
+            if (b == null) {
+                return false;
+            }
+            return b;
+        }
+
+        static isKeyJustDown(keyCode: number) {                        
+            var b: bool = newKeyStates[keyCode];
+            if (b == null) {
+                return false;
+            }
+            return b;
+        }
+
+        static update() {            
+            keyStates = bufferKeyStates;
+            newKeyStates = bufferNewKeyStates;
+            bufferNewKeyStates = new bool[];
+
+            mouseBtns = bufferMouseBtns;
+            newMouseBtns = bufferNewMouseBtns;
+            bufferNewMouseBtns = new bool[];            
         }
 
     }

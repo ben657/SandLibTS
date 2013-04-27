@@ -35,25 +35,13 @@ var SandLib;
 (function (SandLib) {
     var Entity = (function () {
         function Entity(x, y) {
-            this.originX = 0;
-            this.originY = 0;
-            this.rotation = 0;
             this.x = x;
             this.y = y;
         }
         Entity.prototype.update = function () {
         };
         Entity.prototype.draw = function () {
-            if(this.rotation != 0) {
-                console.log("ran");
-                SandLib.Engine.context.save();
-                SandLib.Engine.context.translate(this.x + this.originX, this.y + this.originY);
-                SandLib.Engine.context.rotate(this.rotation * Math.PI / 180);
-                SandLib.Engine.context.drawImage(this.image, -this.originX, -this.originY);
-                SandLib.Engine.context.restore();
-            } else {
-                SandLib.Engine.context.drawImage(this.image, this.x, this.y);
-            }
+            SandLib.Engine.context.drawImage(this.image, this.x, this.y);
         };
         Entity.prototype.getHitBox = function () {
             return new SandLib.HitBox(this.x, this.y, 0, 0);
@@ -148,7 +136,6 @@ var SandLib;
             var rect = SandLib.Engine.canvas.getBoundingClientRect();
             Input.mouseX = event.clientX - rect.left;
             Input.mouseY = event.clientY - rect.top;
-            SandLib.Engine.debugText["Mouse"] = Input.mouseX + ":" + Input.mouseY;
         };
         Input.init = function init() {
             addEventListener("keydown", Input.keyDown);
@@ -265,3 +252,109 @@ var SandLib;
     })();
     SandLib.Engine = Engine;    
 })(SandLib || (SandLib = {}));
+var __extends = this.__extends || function (d, b) {
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var SandLib;
+(function (SandLib) {
+    var Component = (function (_super) {
+        __extends(Component, _super);
+        function Component(x, y, width, height) {
+                _super.call(this, x, y);
+            this.width = 0;
+            this.height = 0;
+            this.width = width;
+            this.height = height;
+        }
+        Component.prototype.getHitBox = function () {
+            return new SandLib.HitBox(this.x, this.y, this.width, this.height);
+        };
+        return Component;
+    })(SandLib.Entity);
+    SandLib.Component = Component;    
+})(SandLib || (SandLib = {}));
+var SandLib;
+(function (SandLib) {
+    var Button = (function (_super) {
+        __extends(Button, _super);
+        function Button(x, y, width, height, text, btnColor, txtColor, clickFunc) {
+                _super.call(this, x, y, width, height);
+            this.text = "";
+            this.textHeight = 12;
+            this.textPos = {
+                x: 0,
+                y: 0
+            };
+            this.text = text;
+            var textSize = SandLib.Engine.context.measureText(this.text);
+            this.textPos.x = (this.x + this.width / 2);
+            this.textPos.y = (this.y + this.height / 2) + (this.textHeight / 2);
+            this.clickFunc = clickFunc;
+            this.imageDat = SandLib.Engine.context.createImageData(this.width, this.height);
+            for(var i = 0; i < this.imageDat.data.length; i += 4) {
+                this.imageDat.data[i] = btnColor.r;
+                this.imageDat.data[i + 1] = btnColor.g;
+                this.imageDat.data[i + 2] = btnColor.b;
+                this.imageDat.data[i + 3] = btnColor.a;
+            }
+        }
+        Button.prototype.clickFunc = function () {
+        };
+        Button.prototype.update = function () {
+            _super.prototype.update.call(this);
+            if(SandLib.Input.isMouseBtnJustDown(SandLib.Input.MOUSE_LEFT)) {
+                if(this.getHitBox().isPointIntersecting(SandLib.Input.mouseX, SandLib.Input.mouseY)) {
+                    this.clickFunc();
+                }
+            }
+        };
+        Button.prototype.draw = function () {
+            SandLib.Engine.context.putImageData(this.imageDat, this.x, this.y);
+            SandLib.Engine.context.fillStyle = "'#000000";
+            SandLib.Engine.context.font = "12px Arial";
+            SandLib.Engine.context.textAlign = "center";
+            SandLib.Engine.context.fillText(this.text, this.textPos.x, this.textPos.y);
+        };
+        return Button;
+    })(SandLib.Component);
+    SandLib.Button = Button;    
+})(SandLib || (SandLib = {}));
+var TG;
+(function (TG) {
+    var MainScene = (function (_super) {
+        __extends(MainScene, _super);
+        function MainScene() {
+                _super.call(this);
+        }
+        MainScene.prototype.init = function () {
+            var button = new SandLib.Button(10, 100, 50, 100, "Text", {
+                r: 255,
+                g: 0,
+                b: 0,
+                a: 255
+            }, null, function () {
+                console.log("ran");
+            });
+            this.add(button);
+        };
+        return MainScene;
+    })(SandLib.Scene);
+    TG.MainScene = MainScene;    
+})(TG || (TG = {}));
+var TG;
+(function (TG) {
+    var Main = (function () {
+        function Main() {
+            var canvas = document.createElement("canvas");
+            canvas.width = 640;
+            canvas.height = 480;
+            document.body.appendChild(canvas);
+            SandLib.Engine.init(new TG.MainScene(), canvas);
+        }
+        return Main;
+    })();
+    TG.Main = Main;    
+})(TG || (TG = {}));
+new TG.Main();

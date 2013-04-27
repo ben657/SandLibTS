@@ -1,26 +1,26 @@
 var SandLib;
 (function (SandLib) {
+    ;
+    ;
+    ;
     var Input = (function () {
         function Input() { }
-        Input.currentKeyStates = new Array();
-        Input.lastKeyStates = new Array();
-        Input.currentMouseState = {
-            mouseButtons: new Array(),
-            x: 0,
-            y: 0
-        };
-        Input.lastMouseState = {
-            mouseButtons: new Array(),
-            x: 0,
-            y: 0
-        };
+        Input.preventTouchDefault = false;
+        Input.keyStates = new Array();
+        Input.newKeyStates = new Array();
+        Input.bufferKeyStates = new Array();
+        Input.bufferNewKeyStates = new Array();
+        Input.mouseBtns = new Array();
+        Input.newMouseBtns = new Array();
+        Input.bufferMouseBtns = new Array();
+        Input.bufferNewMouseBtns = new Array();
         Input.mouseX = 0;
         Input.mouseY = 0;
         Input.MOUSE_LEFT = 0;
         Input.MOUSE_MIDDLE = 1;
         Input.MOUSE_RIGHT = 2;
         Input.keyUp = function keyUp(event) {
-            Input.currentKeyStates[event.keyCode] = false;
+            Input.bufferKeyStates[event.keyCode] = false;
         };
         Input.keyDown = function keyDown(event) {
             if([
@@ -31,28 +31,25 @@ var SandLib;
             ].indexOf(event.keyCode) == 0) {
                 event.preventDefault();
             }
-            Input.currentKeyStates[event.keyCode] = true;
+            if(Input.keyStates[event.keyCode] == false || Input.keyStates[event.keyCode] == null) {
+                Input.bufferNewKeyStates[event.keyCode] = true;
+            }
+            Input.bufferKeyStates[event.keyCode] = true;
         };
         Input.mouseUp = function mouseUp(event) {
-            Input.currentMouseState.mouseButtons[event.button] = false;
+            Input.bufferMouseBtns[event.button] = false;
         };
         Input.mouseDown = function mouseDown(event) {
-            Input.currentMouseState.mouseButtons[event.button] = true;
+            if(Input.mouseBtns[event.button] == false || Input.mouseBtns[event.button] == null) {
+                Input.bufferNewMouseBtns[event.button] = true;
+            }
+            Input.bufferMouseBtns[event.button] = true;
         };
         Input.mouseMove = function mouseMove(event) {
-            var oX = 0;
-            var oY = 0;
-            var currentElement = SandLib.Engine.canvas;
-            do {
-                oX += currentElement.offsetLeft - currentElement.scrollLeft;
-                oY += currentElement.offsetTop - currentElement.scrollTop;
-            }while(currentElement = currentElement.offsetParent);
-            if(event.pageX - oX > 0 && event.pageX - oX < SandLib.Engine.canvas.width && event.pageY - oY > 0 && event.pageY - oY < SandLib.Engine.canvas.height) {
-                Input.currentMouseState.x = event.pageX - oX;
-                Input.currentMouseState.y = event.pageY - oY;
-            }
-            Input.mouseX = Input.currentMouseState.x;
-            Input.mouseY = Input.currentMouseState.y;
+            var rect = SandLib.Engine.canvas.getBoundingClientRect();
+            Input.mouseX = event.clientX - rect.left;
+            Input.mouseY = event.clientY - rect.top;
+            SandLib.Engine.debugText["Mouse"] = Input.mouseX + ":" + Input.mouseY;
         };
         Input.init = function init() {
             addEventListener("keydown", Input.keyDown);
@@ -60,35 +57,44 @@ var SandLib;
             addEventListener("mousedown", Input.mouseDown);
             addEventListener("mouseup", Input.mouseUp);
             addEventListener("mousemove", Input.mouseMove);
-            Input.currentMouseState.x = 0;
-            Input.currentMouseState.y = 0;
+            Input.mouseX = 0;
+            Input.mouseY = 0;
         };
         Input.isMouseBtnDown = function isMouseBtnDown(button) {
-            return Input.currentMouseState.mouseButtons[button];
+            var b = Input.mouseBtns[button];
+            if(b == null) {
+                return false;
+            }
+            return b;
         };
         Input.isMouseBtnJustDown = function isMouseBtnJustDown(button) {
-            if(Input.lastMouseState.mouseButtons[button] == false && Input.currentMouseState.mouseButtons[button] == true) {
-                return true;
+            var b = Input.newMouseBtns[button];
+            if(b == null) {
+                return false;
             }
-            return false;
+            return b;
         };
         Input.isKeyDown = function isKeyDown(keyCode) {
-            var b = Input.currentKeyStates[keyCode];
+            var b = Input.keyStates[keyCode];
             if(b == null) {
                 return false;
             }
             return b;
         };
         Input.isKeyJustDown = function isKeyJustDown(keyCode) {
-            var bNow = Input.currentKeyStates[keyCode];
-            var bThen = Input.lastKeyStates[keyCode];
-            if(bNow == true && (bThen == false || bThen == null)) {
-                return true;
+            var b = Input.newKeyStates[keyCode];
+            if(b == null) {
+                return false;
             }
-            return false;
+            return b;
         };
         Input.update = function update() {
-            Input.lastKeyStates = Input.currentKeyStates;
+            Input.keyStates = Input.bufferKeyStates;
+            Input.newKeyStates = Input.bufferNewKeyStates;
+            Input.bufferNewKeyStates = new Array();
+            Input.mouseBtns = Input.bufferMouseBtns;
+            Input.newMouseBtns = Input.bufferNewMouseBtns;
+            Input.bufferNewMouseBtns = new Array();
         };
         return Input;
     })();

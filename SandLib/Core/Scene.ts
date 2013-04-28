@@ -15,12 +15,20 @@ module SandLib {
 
         }
 
-        getAll(type: any) {
+        getAll(type: any, onScreenForce:bool) {
             var returnArray: Entity[] = new Entity[];
 
             for (var i = 0; i < this.entities.length; i++) {
                 if (this.entities[i] instanceof type) {
-                    returnArray.push(this.entities[i]);
+                    if (onScreenForce) {
+                        if (this.entities[i].isOnScreen()) {
+                            returnArray.push(this.entities[i]);
+                        }
+                    }
+                    else {
+                        returnArray.push(this.entities[i]);
+                    }
+                    
                 }
             }
             return returnArray;

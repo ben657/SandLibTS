@@ -12,11 +12,17 @@ var SandLib;
         }
         Scene.prototype.init = function () {
         };
-        Scene.prototype.getAll = function (type) {
+        Scene.prototype.getAll = function (type, onScreenForce) {
             var returnArray = new Array();
             for(var i = 0; i < this.entities.length; i++) {
                 if(this.entities[i] instanceof type) {
-                    returnArray.push(this.entities[i]);
+                    if(onScreenForce) {
+                        if(this.entities[i].isOnScreen()) {
+                            returnArray.push(this.entities[i]);
+                        }
+                    } else {
+                        returnArray.push(this.entities[i]);
+                    }
                 }
             }
             return returnArray;

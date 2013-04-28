@@ -35,6 +35,7 @@ var SandLib;
 (function (SandLib) {
     var Entity = (function () {
         function Entity(x, y) {
+            this.hidden = false;
             this.scale = 1;
             this.originX = 0;
             this.originY = 0;
@@ -49,14 +50,16 @@ var SandLib;
             return (this.x + this.getHitBox().width > cam.x && this.x < cam.x + SandLib.Engine.width);
         };
         Entity.prototype.draw = function () {
-            if(this.rotation != 0) {
-                SandLib.Engine.context.save();
-                SandLib.Engine.context.translate(this.x - SandLib.Engine.currentScene.camera.x + this.originX, this.y - SandLib.Engine.currentScene.camera.y + this.originY);
-                SandLib.Engine.context.rotate(this.rotation * Math.PI / 180);
-                SandLib.Engine.context.drawImage(this.image, -this.originX, -this.originY, this.getHitBox().width * this.scale, this.getHitBox().height * this.scale);
-                SandLib.Engine.context.restore();
-            } else {
-                SandLib.Engine.context.drawImage(this.image, this.x - SandLib.Engine.currentScene.camera.x, this.y - SandLib.Engine.currentScene.camera.y);
+            if(!this.hidden) {
+                if(this.rotation != 0) {
+                    SandLib.Engine.context.save();
+                    SandLib.Engine.context.translate(this.x - SandLib.Engine.currentScene.camera.x + this.originX, this.y - SandLib.Engine.currentScene.camera.y + this.originY);
+                    SandLib.Engine.context.rotate(this.rotation * Math.PI / 180);
+                    SandLib.Engine.context.drawImage(this.image, -this.originX, -this.originY, this.getHitBox().width * this.scale, this.getHitBox().height * this.scale);
+                    SandLib.Engine.context.restore();
+                } else {
+                    SandLib.Engine.context.drawImage(this.image, this.x - SandLib.Engine.currentScene.camera.x, this.y - SandLib.Engine.currentScene.camera.y);
+                }
             }
         };
         Entity.prototype.getHitBox = function () {
@@ -78,11 +81,17 @@ var SandLib;
         }
         Scene.prototype.init = function () {
         };
-        Scene.prototype.getAll = function (type) {
+        Scene.prototype.getAll = function (type, onScreenForce) {
             var returnArray = new Array();
             for(var i = 0; i < this.entities.length; i++) {
                 if(this.entities[i] instanceof type) {
-                    returnArray.push(this.entities[i]);
+                    if(onScreenForce) {
+                        if(this.entities[i].isOnScreen()) {
+                            returnArray.push(this.entities[i]);
+                        }
+                    } else {
+                        returnArray.push(this.entities[i]);
+                    }
                 }
             }
             return returnArray;
@@ -186,7 +195,6 @@ var SandLib;
             var rect = SandLib.Engine.canvas.getBoundingClientRect();
             Input.mouseX = event.clientX - rect.left;
             Input.mouseY = event.clientY - rect.top;
-            SandLib.Engine.debugText["Mouse"] = Input.mouseX + ":" + Input.mouseY;
         };
         Input.init = function init() {
             addEventListener("keydown", Input.keyDown);
@@ -263,7 +271,6 @@ var SandLib;
             SandLib.Input.update();
             Engine.currentScene.update();
             Engine.draw();
-            Engine.debugText["Interval"] = Engine.timeInterval.toString();
             requestAnimationFrame(Engine.update);
         };
         Engine.init = function init(initialScene, canvas) {
@@ -289,6 +296,10 @@ var SandLib;
                 });
             }
             return img;
+        };
+        Engine.setScene = function setScene(scene) {
+            Engine.currentScene = scene;
+            Engine.currentScene.init();
         };
         Engine.normalizeVector = function normalizeVector(vector) {
             var length = Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2));

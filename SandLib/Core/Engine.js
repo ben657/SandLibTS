@@ -21,7 +21,7 @@ var SandLib;
             SandLib.Input.update();
             Engine.currentScene.update();
             Engine.draw();
-            Engine.debugText["Interval"] = Engine.timeInterval.toString();
+            //Engine.debugText["Interval"] = Engine.timeInterval.toString();
             requestAnimationFrame(Engine.update);
         };
         Engine.init = function init(initialScene, canvas) {
@@ -48,6 +48,10 @@ var SandLib;
                 });
             }
             return img;
+        };
+        Engine.setScene = function setScene(scene) {
+            Engine.currentScene = scene;
+            Engine.currentScene.init();
         };
         Engine.normalizeVector = function normalizeVector(vector) {
             var length = Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2));

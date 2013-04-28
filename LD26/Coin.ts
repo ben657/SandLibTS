@@ -16,6 +16,8 @@ module LD {
                 if (GameScene.player.getHitBox().isHitboxIntersecting(this.getHitBox())) {
                     SandLib.Engine.currentScene.remove(this);
                     GameScene.player.coins++;
+                    GameScene.flashMoneyLbl();
+                    Main.coinSnd.play();
                 }
             }
         }

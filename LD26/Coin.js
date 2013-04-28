@@ -20,6 +20,8 @@ var LD;
                 if(LD.GameScene.player.getHitBox().isHitboxIntersecting(this.getHitBox())) {
                     SandLib.Engine.currentScene.remove(this);
                     LD.GameScene.player.coins++;
+                    LD.GameScene.flashMoneyLbl();
+                    LD.Main.coinSnd.play();
                 }
             }
         };

@@ -46,6 +46,10 @@
       <DependentUpon>Main.ts</DependentUpon>
     </Content>
     <TypeScriptCompile Include="LD26\Platform.ts" />
+    <TypeScriptCompile Include="LD26\MainMenu.ts" />
+    <Content Include="LD26\MainMenu.js">
+      <DependentUpon>MainMenu.ts</DependentUpon>
+    </Content>
     <Content Include="LD26\Platform.js">
       <DependentUpon>Platform.ts</DependentUpon>
     </Content>
@@ -61,6 +65,10 @@
     </Content>
     <TypeScriptCompile Include="SandLib\UI\Component.ts" />
     <TypeScriptCompile Include="SandLib\UI\Button.ts" />
+    <TypeScriptCompile Include="SandLib\Core\EntityText.ts" />
+    <Content Include="SandLib\Core\TextEnt.js">
+      <DependentUpon>EntityText.ts</DependentUpon>
+    </Content>
     <Content Include="SandLib\UI\Button.js">
       <DependentUpon>Button.ts</DependentUpon>
     </Content>

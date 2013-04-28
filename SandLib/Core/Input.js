@@ -67,7 +67,6 @@ var SandLib;
             var rect = SandLib.Engine.canvas.getBoundingClientRect();
             Input.mouseX = event.clientX - rect.left;
             Input.mouseY = event.clientY - rect.top;
-            SandLib.Engine.debugText["Mouse"] = Input.mouseX + ":" + Input.mouseY;
         };
         Input.init = function init() {
             addEventListener("keydown", Input.keyDown);

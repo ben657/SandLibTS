@@ -35,6 +35,7 @@ var SandLib;
 (function (SandLib) {
     var Entity = (function () {
         function Entity(x, y) {
+            this.hidden = false;
             this.scale = 1;
             this.originX = 0;
             this.originY = 0;
@@ -49,14 +50,16 @@ var SandLib;
             return (this.x + this.getHitBox().width > cam.x && this.x < cam.x + SandLib.Engine.width);
         };
         Entity.prototype.draw = function () {
-            if(this.rotation != 0) {
-                SandLib.Engine.context.save();
-                SandLib.Engine.context.translate(this.x - SandLib.Engine.currentScene.camera.x + this.originX, this.y - SandLib.Engine.currentScene.camera.y + this.originY);
-                SandLib.Engine.context.rotate(this.rotation * Math.PI / 180);
-                SandLib.Engine.context.drawImage(this.image, -this.originX, -this.originY, this.getHitBox().width * this.scale, this.getHitBox().height * this.scale);
-                SandLib.Engine.context.restore();
-            } else {
-                SandLib.Engine.context.drawImage(this.image, this.x - SandLib.Engine.currentScene.camera.x, this.y - SandLib.Engine.currentScene.camera.y);
+            if(!this.hidden) {
+                if(this.rotation != 0) {
+                    SandLib.Engine.context.save();
+                    SandLib.Engine.context.translate(this.x - SandLib.Engine.currentScene.camera.x + this.originX, this.y - SandLib.Engine.currentScene.camera.y + this.originY);
+                    SandLib.Engine.context.rotate(this.rotation * Math.PI / 180);
+                    SandLib.Engine.context.drawImage(this.image, -this.originX, -this.originY, this.getHitBox().width * this.scale, this.getHitBox().height * this.scale);
+                    SandLib.Engine.context.restore();
+                } else {
+                    SandLib.Engine.context.drawImage(this.image, this.x - SandLib.Engine.currentScene.camera.x, this.y - SandLib.Engine.currentScene.camera.y);
+                }
             }
         };
         Entity.prototype.getHitBox = function () {
@@ -78,11 +81,17 @@ var SandLib;
         }
         Scene.prototype.init = function () {
         };
-        Scene.prototype.getAll = function (type) {
+        Scene.prototype.getAll = function (type, onScreenForce) {
             var returnArray = new Array();
             for(var i = 0; i < this.entities.length; i++) {
                 if(this.entities[i] instanceof type) {
-                    returnArray.push(this.entities[i]);
+                    if(onScreenForce) {
+                        if(this.entities[i].isOnScreen()) {
+                            returnArray.push(this.entities[i]);
+                        }
+                    } else {
+                        returnArray.push(this.entities[i]);
+                    }
                 }
             }
             return returnArray;
@@ -186,7 +195,6 @@ var SandLib;
             var rect = SandLib.Engine.canvas.getBoundingClientRect();
             Input.mouseX = event.clientX - rect.left;
             Input.mouseY = event.clientY - rect.top;
-            SandLib.Engine.debugText["Mouse"] = Input.mouseX + ":" + Input.mouseY;
         };
         Input.init = function init() {
             addEventListener("keydown", Input.keyDown);
@@ -263,7 +271,6 @@ var SandLib;
             SandLib.Input.update();
             Engine.currentScene.update();
             Engine.draw();
-            Engine.debugText["Interval"] = Engine.timeInterval.toString();
             requestAnimationFrame(Engine.update);
         };
         Engine.init = function init(initialScene, canvas) {
@@ -289,6 +296,10 @@ var SandLib;
                 });
             }
             return img;
+        };
+        Engine.setScene = function setScene(scene) {
+            Engine.currentScene = scene;
+            Engine.currentScene.init();
         };
         Engine.normalizeVector = function normalizeVector(vector) {
             var length = Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2));
@@ -355,11 +366,13 @@ var SandLib;
                 _super.call(this, x, y, width, height);
             this.text = "";
             this.textHeight = 12;
+            this.textCol = "#000000";
             this.textPos = {
                 x: 0,
                 y: 0
             };
             this.text = text;
+            this.textCol = txtColor;
             var textSize = SandLib.Engine.context.measureText(this.text);
             this.textPos.x = (this.x + this.width / 2);
             this.textPos.y = (this.y + this.height / 2) + (this.textHeight / 2);
@@ -384,14 +397,44 @@ var SandLib;
         };
         Button.prototype.draw = function () {
             SandLib.Engine.context.putImageData(this.imageDat, this.x, this.y);
-            SandLib.Engine.context.fillStyle = "'#000000";
-            SandLib.Engine.context.font = "12px Arial";
+            SandLib.Engine.context.fillStyle = this.textCol;
+            SandLib.Engine.context.font = "20px Arial";
             SandLib.Engine.context.textAlign = "center";
             SandLib.Engine.context.fillText(this.text, this.textPos.x, this.textPos.y);
         };
         return Button;
     })(SandLib.Component);
     SandLib.Button = Button;    
+})(SandLib || (SandLib = {}));
+var SandLib;
+(function (SandLib) {
+    var EntityText = (function (_super) {
+        __extends(EntityText, _super);
+        function EntityText(x, y, text, size, color) {
+                _super.call(this, x, y);
+            this.text = "";
+            this.textCol = {
+                r: 0,
+                g: 0,
+                b: 0,
+                a: 255
+            };
+            this.textSize = 20;
+            this.text = text;
+            this.textSize = size;
+            this.textCol = color;
+        }
+        EntityText.prototype.draw = function () {
+            if(!this.hidden) {
+                SandLib.Engine.context.fillStyle = "rgba(" + this.textCol.r + ", " + this.textCol.g + ", " + this.textCol.b + ", " + this.textCol.a + ")";
+                SandLib.Engine.context.font = this.textSize + "px Arial";
+                SandLib.Engine.context.textAlign = "left";
+                SandLib.Engine.context.fillText(this.text, this.x - SandLib.Engine.currentScene.camera.x, this.y - SandLib.Engine.currentScene.camera.y);
+            }
+        };
+        return EntityText;
+    })(SandLib.Entity);
+    SandLib.EntityText = EntityText;    
 })(SandLib || (SandLib = {}));
 var SandLib;
 (function (SandLib) {
@@ -426,43 +469,84 @@ var LD;
                 32, 
                 16
             ];
-            this.gravity = 50;
+            this.gravity = 40;
             this.jumpPow = 1000;
-            this.accel = 3;
-            this.maxVel = 800;
+            this.jumpBoost = 1.2;
+            this.accel = 0.05;
+            this.maxVel = 1500;
             this.decel = 20;
             this.coins = 0;
             this.cameraMoveZone = 100;
-            this.onGround = false;
+            this.onGround = true;
             this.image = SandLib.Engine.getImage("LD26/player.png");
             this.image.width = this.image.height = 32;
             var hb = this.getHitBox();
             this.originX = hb.width / 2;
             this.originY = hb.height / 2;
+            this.velocity.x = 300;
             SandLib.Input.registerCheat(this.cheatato, function () {
                 console.log("potato");
                 LD.GameScene.player.image = SandLib.Engine.getImage("LD26/potato.png");
             });
         }
         Player.prototype.update = function () {
-            SandLib.Engine.debugText["Coins"] = this.coins;
             this.velocity.y += this.gravity;
             if(SandLib.Input.isKeyJustDown(16)) {
                 this.gravity *= -1;
                 this.jumpPow *= -1;
             }
-            if(SandLib.Input.isKeyJustDown(32) && this.onGround) {
-                this.velocity.y -= this.jumpPow;
-                this.onGround = false;
-            }
             this.velocity.x += this.accel;
             if(this.velocity.x > this.maxVel) {
-                this.velocity.x = this.maxVel;
+                this.velocity.x -= this.decel;
             }
             if(this.x > this.cameraMoveZone) {
                 SandLib.Engine.currentScene.camera.x = this.x - this.cameraMoveZone;
             }
+            var platforms = SandLib.Engine.currentScene.getAll(LD.Platform, true);
+            for(var i in platforms) {
+                var p = platforms[i];
+                if(p.location == LD.Platform.LOC_BOTTOM) {
+                    if(p.getHitBox().isHitboxIntersecting(this.getHitBox())) {
+                        this.y = p.y - this.getHitBox().height;
+                        if(!this.onGround) {
+                            LD.Main.landSnd.play();
+                        }
+                        this.onGround = true;
+                        this.velocity.y = 0;
+                    } else if(this.y + this.getHitBox().height > p.y && this.x < p.x + p.getHitBox().width && this.x + this.getHitBox().width + this.velocity.x * SandLib.Engine.timeInterval >= p.x) {
+                        this.velocity.x = 0;
+                        this.onGround = false;
+                    }
+                } else if(p.location == LD.Platform.LOC_TOP) {
+                    if(p.getHitBox().isHitboxIntersecting(this.getHitBox())) {
+                        this.y = p.y + p.getHitBox().height;
+                        if(!this.onGround) {
+                            LD.Main.landSnd.play();
+                        }
+                        this.onGround = true;
+                        this.velocity.y = 0;
+                    } else if(this.y < p.y + p.getHitBox().height && this.x < p.x + p.getHitBox().width && this.x + this.getHitBox().width + this.velocity.x * SandLib.Engine.timeInterval >= p.x) {
+                        this.velocity.x = 0;
+                        this.onGround = false;
+                    }
+                }
+            }
+            if(SandLib.Input.isKeyJustDown(32) && this.onGround) {
+                this.velocity.y -= this.jumpPow;
+                this.velocity.x *= this.jumpBoost;
+                this.onGround = false;
+                LD.Main.jumpSnd.play();
+            }
+            if(this.y > 800 || this.y < -800) {
+                this.die();
+            }
             _super.prototype.update.call(this);
+        };
+        Player.prototype.die = function () {
+            if(this.coins > LD.MainMenu.hiScore) {
+                localStorage.setItem("hiScore", this.coins.toString());
+            }
+            SandLib.Engine.setScene(new LD.MainMenu());
         };
         Player.prototype.draw = function () {
             _super.prototype.draw.call(this);
@@ -478,11 +562,12 @@ var LD;
 (function (LD) {
     var Platform = (function (_super) {
         __extends(Platform, _super);
-        function Platform(x, y, width, height, color) {
+        function Platform(x, y, width, height, location, color) {
                 _super.call(this, x, y);
             this.width = 0;
             this.height = 0;
             this.location = 0;
+            this.location = location;
             this.width = width;
             this.height = height;
             this.imageDat = SandLib.Engine.context.createImageData(width, height);
@@ -495,22 +580,20 @@ var LD;
         }
         Platform.LOC_BOTTOM = 0;
         Platform.LOC_TOP = 1;
-        Platform.prototype.update = function () {
+        Platform.prototype.addCoins = function () {
+            var numCoins = Math.round(this.getHitBox().width / 30);
+            for(var i = 0; i < numCoins; i++) {
+                if(this.location == 0) {
+                    SandLib.Engine.currentScene.add(new LD.Coin(this.x + i * 30 + 6, this.y - 20));
+                } else if(this.location == 1) {
+                    SandLib.Engine.currentScene.add(new LD.Coin(this.x + i * 30 + 6, this.y + this.getHitBox().height + 4));
+                }
+            }
         };
         Platform.prototype.getHitBox = function () {
             return new SandLib.HitBox(this.x, this.y, this.width, this.height);
         };
         Platform.prototype.draw = function () {
-            if(this.isOnScreen()) {
-                if((LD.GameScene.player.y + LD.GameScene.player.getHitBox().height) - this.y > 8 && this.x - (LD.GameScene.player.x + LD.GameScene.player.getHitBox().width) < 1 && this.x - LD.GameScene.player.x >= 0) {
-                    LD.GameScene.player.velocity.x = -10;
-                }
-                if(this.getHitBox().isHitboxIntersecting(LD.GameScene.player.getHitBox())) {
-                    LD.GameScene.player.y = this.y - LD.GameScene.player.getHitBox().height;
-                    LD.GameScene.player.velocity.y = 0;
-                    LD.GameScene.player.onGround = true;
-                }
-            }
             if(this.isOnScreen()) {
                 SandLib.Engine.context.putImageData(this.imageDat, this.x - SandLib.Engine.currentScene.camera.x, this.y - SandLib.Engine.currentScene.camera.y);
             }
@@ -532,6 +615,8 @@ var LD;
                 if(LD.GameScene.player.getHitBox().isHitboxIntersecting(this.getHitBox())) {
                     SandLib.Engine.currentScene.remove(this);
                     LD.GameScene.player.coins++;
+                    LD.GameScene.flashMoneyLbl();
+                    LD.Main.coinSnd.play();
                 }
             }
         };
@@ -553,35 +638,73 @@ var LD;
             this.maxY = 530;
             this.minY = 400;
             this.platformCol = {
-                r: 200,
-                g: 200,
-                b: 200,
+                r: 255,
+                g: 255,
+                b: 255,
                 a: 255
             };
         }
         GameScene.prototype.init = function () {
-            GameScene.player = new LD.Player(10, 320);
+            GameScene.player = new LD.Player(10, this.lastY - 32);
+            GameScene.moneyLbl = new SandLib.EntityText(0, 0, "Coins: 0", 20, {
+                r: 255,
+                g: 255,
+                b: 255,
+                a: 0
+            });
+            GameScene.moneyLbl.hidden = true;
             var platformWidth = Math.random() * 100 + 300;
-            this.add(new LD.Platform(this.endX, this.lastY, platformWidth, 200, this.platformCol));
+            this.add(new LD.Platform(this.endX, this.lastY, platformWidth, 40, LD.Platform.LOC_BOTTOM, this.platformCol));
+            this.add(new LD.Platform(this.endX, 0, platformWidth, 40, LD.Platform.LOC_TOP, this.platformCol));
             this.add(GameScene.player);
+            this.add(GameScene.moneyLbl);
+        };
+        GameScene.flashMoneyLbl = function flashMoneyLbl() {
+            GameScene.moneyLbl.textCol.a = 1;
+            GameScene.moneyLbl.hidden = false;
+            GameScene.moneyLbl.text = "Coins: " + GameScene.player.coins;
         };
         GameScene.prototype.update = function () {
             _super.prototype.update.call(this);
             if(this.endX < SandLib.Engine.width + SandLib.Engine.currentScene.camera.x) {
                 this.generatePlatform();
             }
+            if(GameScene.moneyLbl.textCol.a > 0) {
+                GameScene.moneyLbl.textCol.a -= 0.02;
+                console.log(GameScene.moneyLbl.textCol.a);
+                GameScene.moneyLbl.x = GameScene.player.x - 10;
+                if(GameScene.player.gravity < 0) {
+                    GameScene.moneyLbl.y = GameScene.player.y + 50;
+                } else {
+                    GameScene.moneyLbl.y = GameScene.player.y - 8;
+                }
+            }
+            if(GameScene.moneyLbl.textCol.a <= 0) {
+                GameScene.moneyLbl.hidden = true;
+            }
         };
         GameScene.prototype.generatePlatform = function () {
-            var hasCoins = Math.random() <= 0.5;
-            var platformWidth = Math.random() * 100 + 300;
-            var gap = Math.random() * 200 + 100;
-            this.add(new LD.Platform(this.endX + gap, this.lastY, platformWidth, 200, this.platformCol));
-            if(hasCoins) {
-                console.log("ran");
-                var numCoins = Math.round(platformWidth / 30);
-                for(var i = 0; i < numCoins; i++) {
-                    this.add(new LD.Coin(this.endX + gap + i * 30 + 6, this.lastY - 17));
-                }
+            var topHasCoins = Math.random() <= 0.3;
+            var bottomHasCoins = Math.random() <= 0.3;
+            var platformWidth = Math.random() * 200 + 300 + GameScene.player.velocity.x * 0.15;
+            var minGap = 0;
+            var speedMult = 0.7;
+            if(GameScene.player.velocity.x * speedMult < 100) {
+                minGap = 100;
+            } else {
+                minGap = GameScene.player.velocity.x * speedMult;
+            }
+            var gap = Math.random() * 150 + minGap;
+            var height = SandLib.Engine.height - this.lastY;
+            var pTop = new LD.Platform(this.endX + gap, this.lastY, platformWidth, height, LD.Platform.LOC_BOTTOM, this.platformCol);
+            var pBottom = new LD.Platform(this.endX + gap, 0, platformWidth, height, LD.Platform.LOC_TOP, this.platformCol);
+            this.add(pTop);
+            this.add(pBottom);
+            if(topHasCoins) {
+                pTop.addCoins();
+            }
+            if(bottomHasCoins) {
+                pBottom.addCoins();
             }
             this.lastY = Math.random() * 100 + this.lastY - 50;
             this.endX += gap + platformWidth;
@@ -598,16 +721,66 @@ var LD;
 })(LD || (LD = {}));
 var LD;
 (function (LD) {
+    var MainMenu = (function (_super) {
+        __extends(MainMenu, _super);
+        function MainMenu() {
+                _super.call(this);
+            this.btnCol = {
+                r: 100,
+                g: 100,
+                b: 100,
+                a: 255
+            };
+            this.txtCol = {
+                r: 255,
+                g: 255,
+                b: 255,
+                a: 255
+            };
+        }
+        MainMenu.hiScore = 0;
+        MainMenu.prototype.init = function () {
+            this.playBtn = new SandLib.Button(SandLib.Engine.width / 2 - 50, SandLib.Engine.height / 5, 100, 30, "Play", this.btnCol, "#FFFFFF", function () {
+                SandLib.Engine.setScene(new LD.GameScene());
+            });
+            MainMenu.hiScore = parseInt(localStorage.getItem("hiScore"));
+            if(isNaN(MainMenu.hiScore)) {
+                MainMenu.hiScore = 0;
+            }
+            this.add(this.playBtn);
+            this.add(new SandLib.EntityText(this.playBtn.x, SandLib.Engine.height / 5 * 2, "HiScore: " + MainMenu.hiScore, 20, {
+                r: 255,
+                g: 255,
+                b: 255,
+                a: 1
+            }));
+        };
+        MainMenu.prototype.update = function () {
+            _super.prototype.update.call(this);
+            if(SandLib.Input.isKeyJustDown(32)) {
+                SandLib.Engine.setScene(new LD.GameScene());
+            }
+        };
+        return MainMenu;
+    })(SandLib.Scene);
+    LD.MainMenu = MainMenu;    
+})(LD || (LD = {}));
+var LD;
+(function (LD) {
     var Main = (function () {
         function Main() {
             var canvas = document.createElement("canvas");
-            canvas.width = 960;
+            canvas.width = 1024;
             canvas.height = 540;
             document.body.appendChild(canvas);
             SandLib.Engine.fillColor = "#000000";
             SandLib.Engine.debugTextCol = "#FFFFFF";
-            SandLib.Engine.init(new LD.GameScene(), canvas);
+            SandLib.Engine.init(new LD.MainMenu(), canvas);
         }
+        Main.jumpSnd = new Audio("LD26/jump.mp3");
+        Main.landSnd = new Audio("LD26/land.mp3");
+        Main.coinSnd = new Audio("LD26/coin.mp3");
+        Main.mainSnd = new Audio("LD26/main.mp3");
         return Main;
     })();
     LD.Main = Main;    

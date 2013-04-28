@@ -108,8 +108,7 @@ module SandLib {
         private static mouseMove(event: MouseEvent) {            
             var rect: ClientRect = Engine.canvas.getBoundingClientRect();
             Input.mouseX = event.clientX - rect.left;
-            Input.mouseY = event.clientY - rect.top;
-            Engine.debugText["Mouse"] = Input.mouseX + ":" + Input.mouseY;
+            Input.mouseY = event.clientY - rect.top;            
         }    
 
         static init() {

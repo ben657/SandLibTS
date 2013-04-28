@@ -14,11 +14,13 @@ var SandLib;
                 _super.call(this, x, y, width, height);
             this.text = "";
             this.textHeight = 12;
+            this.textCol = "#000000";
             this.textPos = {
                 x: 0,
                 y: 0
             };
             this.text = text;
+            this.textCol = txtColor;
             var textSize = SandLib.Engine.context.measureText(this.text);
             this.textPos.x = (this.x + this.width / 2);
             this.textPos.y = (this.y + this.height / 2) + (this.textHeight / 2);
@@ -43,8 +45,8 @@ var SandLib;
         };
         Button.prototype.draw = function () {
             SandLib.Engine.context.putImageData(this.imageDat, this.x, this.y);
-            SandLib.Engine.context.fillStyle = "'#000000";
-            SandLib.Engine.context.font = "12px Arial";
+            SandLib.Engine.context.fillStyle = this.textCol;
+            SandLib.Engine.context.font = "20px Arial";
             SandLib.Engine.context.textAlign = "center";
             SandLib.Engine.context.fillText(this.text, this.textPos.x, this.textPos.y);
         };

@@ -42,7 +42,7 @@ module SandLib {
             Input.update();
             currentScene.update();            
             draw();
-            Engine.debugText["Interval"] = Engine.timeInterval.toString();
+            //Engine.debugText["Interval"] = Engine.timeInterval.toString();
             requestAnimationFrame(update);
         }
 
@@ -72,7 +72,12 @@ module SandLib {
                 });
             }
             return img;
-        }        
+        }
+
+        static setScene(scene: Scene) {
+            Engine.currentScene = scene;
+            Engine.currentScene.init();
+        }
 
         static normalizeVector(vector:Vector) {
             var length = Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2));

@@ -14,8 +14,9 @@ module LD {
         height: number = 0;
         location:number = 0;
 
-        constructor(x: number, y: number, width:number,height:number, color:SandLib.Color) {
+        constructor(x: number, y: number, width:number,height:number, location:number, color:SandLib.Color) {
             super(x, y);
+            this.location = location;
             this.width = width;
             this.height = height;
             this.imageDat = SandLib.Engine.context.createImageData(width, height);
@@ -27,25 +28,23 @@ module LD {
             }
         }
 
-        update() {
-            
+        addCoins() {
+            var numCoins = Math.round(this.getHitBox().width / 30);
+            for (var i = 0; i < numCoins; i++) {
+                if (this.location == 0) {
+                    SandLib.Engine.currentScene.add(new Coin(this.x + i * 30 + 6, this.y - 20));
+                }
+                else if (this.location == 1) {
+                    SandLib.Engine.currentScene.add(new Coin(this.x + i * 30 + 6, this.y + this.getHitBox().height + 4));
+                }
+            }
         }
 
         getHitBox() {
             return new SandLib.HitBox(this.x, this.y, this.width, this.height);
         }
 
-        draw() {
-            if (this.isOnScreen()) {
-                if ((GameScene.player.y + GameScene.player.getHitBox().height) - this.y > 8 && this.x - (GameScene.player.x + GameScene.player.getHitBox().width) < 1 && this.x - GameScene.player.x >= 0) {
-                    GameScene.player.velocity.x = -10;
-                }        
-                if (this.getHitBox().isHitboxIntersecting(GameScene.player.getHitBox())) {
-                    GameScene.player.y = this.y - GameScene.player.getHitBox().height;
-                    GameScene.player.velocity.y = 0;
-                    GameScene.player.onGround = true;
-                }                
-            }
+        draw() {            
             if (this.isOnScreen()) {
                 SandLib.Engine.context.putImageData(this.imageDat, this.x - SandLib.Engine.currentScene.camera.x, this.y - SandLib.Engine.currentScene.camera.y);
             }

@@ -22,16 +22,6 @@
     <TypeScriptCompile Include="SandLib\Core\Entity.ts" />
     <TypeScriptCompile Include="SandLib\Core\Scene.ts" />
     <TypeScriptCompile Include="SandLib\Core\Input.ts" />
-    <TypeScriptCompile Include="FighterFlight\GameScene.ts" />
-    <TypeScriptCompile Include="FighterFlight\Main.ts" />
-    <TypeScriptCompile Include="FighterFlight\Entities\Jet.ts" />
-    <Content Include="FighterFlight\Entities\Jet.js">
-      <DependentUpon>Jet.ts</DependentUpon>
-    </Content>
-    <TypeScriptCompile Include="FighterFlight\Entities\PlayerJet.ts" />
-    <Content Include="FighterFlight\Entities\PlayerJet.js">
-      <DependentUpon>PlayerJet.ts</DependentUpon>
-    </Content>
     <TypeScriptCompile Include="SandLib\Core\EntityMoving.ts" />
     <TypeScriptCompile Include="LD26\Main.ts" />
     <TypeScriptCompile Include="LD26\GameScene.ts" />
@@ -77,14 +67,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="TestProj\Main.ts" />
-    <Content Include="TestProj\Main.js">
-      <DependentUpon>Main.ts</DependentUpon>
-    </Content>
-    <TypeScriptCompile Include="TestProj\MainScene.ts" />
-    <Content Include="TestProj\MainScene.js">
-      <DependentUpon>MainScene.ts</DependentUpon>
-    </Content>
     <TypeScriptCompile Include="LD26\Player.ts" />
     <Content Include="LD26\Player.js">
       <DependentUpon>Player.ts</DependentUpon>

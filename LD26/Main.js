@@ -10,7 +10,7 @@ var LD;
             canvas.height = 540;
             document.body.appendChild(canvas);
             SandLib.Engine.fillColor = "#000000";
-            SandLib.Engine.debugTextCol = "#FFFFFF";
+            SandLib.Engine.debugTextCol = "#FF0000";
             SandLib.Engine.init(new LD.MainMenu(), canvas);
         }
         Main.jumpSnd = new Audio("LD26/jump.mp3");

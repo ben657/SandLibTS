@@ -18,7 +18,7 @@ module SandLib {
     export class Engine {
 
         static debugText: { [index: string]: any; } = {};
-        static debugTextCol:string = "#000000";
+        static debugTextCol: string = "#FF0000";
 
         static canvas: HTMLCanvasElement;
         static context: CanvasRenderingContext2D;
@@ -31,35 +31,43 @@ module SandLib {
         static width = 0;
         static height = 0;
         static fillColor: string = "#AAAAAA";
+        static hasTouchScreen: bool = false;
 
-        private static lastUpdate = new Date();
-        static timeInterval:number = 0;
+        static nextFrame: ImageData;
+
+        private static lastUpdate: number = Date.now();
+        static timeInterval: number = 0;
 
         static update() {
-            var now: Date = new Date();
-            timeInterval = (now.getTime() - Engine.lastUpdate.getTime()) / 1000;
-            Engine.lastUpdate = now;
+            Engine.timeInterval = (Date.now() - Engine.lastUpdate) / 1000;
+            Engine.lastUpdate = Date.now();
             Input.update();
-            currentScene.update();            
+            currentScene.update();
             draw();
-            //Engine.debugText["Interval"] = Engine.timeInterval.toString();
-            requestAnimationFrame(update);
+            if (window.requestAnimationFrame != null) {
+                requestAnimationFrame(Engine.update);
+            }
+            Engine.debugText["Interval"] = Engine.timeInterval.toString();
         }
 
-        static init(initialScene: Scene, canvas: HTMLCanvasElement) {            
+        static init(initialScene: Scene, canvas: HTMLCanvasElement, fps?: number = 60) {
             Engine.currentScene = initialScene;
             Engine.canvas = canvas;
             Engine.context = canvas.getContext("2d");
             Engine.width = canvas.width;
             Engine.height = canvas.height;
+            if (!!("ontouchstart" in window) || !!("onmsgesturechange" in window)) {
+                Engine.hasTouchScreen = true;
+            }
             Input.init();
             currentScene.init();
-            requestAnimationFrame(update);
-            //setInterval(update, 16);
-        }
+            if (window.requestAnimationFrame != null) {
+                requestAnimationFrame(Engine.update);
+            }
+            else {
+                setInterval(update, (1 / fps) * 1000);
+            }
 
-        static initTouch() {
-            Input.preventTouchDefault = true;
         }
 
         static getImage(path: string): HTMLImageElement {
@@ -75,11 +83,12 @@ module SandLib {
         }
 
         static setScene(scene: Scene) {
+            Engine.currentScene.end();
             Engine.currentScene = scene;
             Engine.currentScene.init();
         }
 
-        static normalizeVector(vector:Vector) {
+        static normalizeVector(vector: Vector) {
             var length = Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2));
             if (length == 0) {
                 return { x: 0, y: 0 };
@@ -99,8 +108,8 @@ module SandLib {
             context.font = "20px Arial";
             context.textAlign = "left";
             var i = 0;
-            for (var key in debugText) {                
-                context.fillText(key + ": " + debugText[key], 5, (i + 1) * 20);              
+            for (var key in debugText) {
+                context.fillText(key + ": " + debugText[key], 5, (i + 1) * 20);
                 i++;
             }
         }

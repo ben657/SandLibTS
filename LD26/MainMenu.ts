@@ -29,6 +29,7 @@ module LD {
             }
             
             this.add(this.playBtn);
+            this.add(new SandLib.EntityText(this.playBtn.x - 400, SandLib.Engine.height / 5 * 4, "Note: There's a special key combination which will transform you... only space and shift, try and get it!", 20, { r: 255, g: 255, b: 255, a: 1 }));
             this.add(new SandLib.EntityText(this.playBtn.x, SandLib.Engine.height / 5 * 2, "HiScore: " + MainMenu.hiScore, 20, { r: 255, g: 255, b: 255, a: 1 }));
         }
 

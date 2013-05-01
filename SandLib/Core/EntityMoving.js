@@ -17,7 +17,6 @@ var SandLib;
             };
         }
         EntityMoving.prototype.update = function () {
-            _super.prototype.update.call(this);
             this.x += this.velocity.x * SandLib.Engine.timeInterval;
             this.y += this.velocity.y * SandLib.Engine.timeInterval;
         };

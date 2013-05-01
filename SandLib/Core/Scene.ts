@@ -15,6 +15,10 @@ module SandLib {
 
         }
 
+        end() {
+
+        }
+
         getAll(type: any, onScreenForce:bool) {
             var returnArray: Entity[] = new Entity[];
 

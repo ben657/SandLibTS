@@ -26,6 +26,7 @@
     <TypeScriptCompile Include="LD26\Main.ts" />
     <TypeScriptCompile Include="LD26\GameScene.ts" />
     <TypeScriptCompile Include="LD26\Coin.ts" />
+    <Content Include="default_touch.htm" />
     <Content Include="LD26\Coin.js">
       <DependentUpon>Coin.ts</DependentUpon>
     </Content>
@@ -79,6 +80,7 @@
       <DependentUpon>web.config</DependentUpon>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

@@ -17,7 +17,7 @@ module LD {
             canvas.height = 540;
             document.body.appendChild(canvas);
             SandLib.Engine.fillColor = "#000000";
-            SandLib.Engine.debugTextCol = "#FFFFFF";
+            SandLib.Engine.debugTextCol = "#FF0000";
             SandLib.Engine.init(new MainMenu(), canvas);
         }
     }

@@ -19,34 +19,33 @@ var LD;
                 32, 
                 16
             ];
-            this.gravity = 40;
+            this.gravity = 2350;
             this.jumpPow = 1000;
             this.jumpBoost = 1.2;
-            this.accel = 0.05;
+            this.accel = 50;
             this.maxVel = 1500;
             this.decel = 20;
             this.coins = 0;
             this.cameraMoveZone = 100;
             this.onGround = true;
             this.image = SandLib.Engine.getImage("LD26/player.png");
-            this.image.width = this.image.height = 32;
+            //this.image.width = this.image.height = 32;
             var hb = this.getHitBox();
             this.originX = hb.width / 2;
             this.originY = hb.height / 2;
             this.velocity.x = 300;
             SandLib.Input.registerCheat(this.cheatato, function () {
-                console.log("potato");
                 LD.GameScene.player.image = SandLib.Engine.getImage("LD26/potato.png");
             });
         }
         Player.prototype.update = function () {
             //W:87 S:83 A:65 D:68
-            this.velocity.y += this.gravity;
             if(SandLib.Input.isKeyJustDown(16)) {
                 this.gravity *= -1;
                 this.jumpPow *= -1;
             }
-            this.velocity.x += this.accel;
+            this.velocity.y += this.gravity * SandLib.Engine.timeInterval;
+            this.velocity.x += this.accel * SandLib.Engine.timeInterval;
             if(this.velocity.x > this.maxVel) {
                 this.velocity.x -= this.decel;
             }

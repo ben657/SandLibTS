@@ -81,6 +81,8 @@ var SandLib;
         }
         Scene.prototype.init = function () {
         };
+        Scene.prototype.end = function () {
+        };
         Scene.prototype.getAll = function (type, onScreenForce) {
             var returnArray = new Array();
             for(var i = 0; i < this.entities.length; i++) {
@@ -133,7 +135,6 @@ var SandLib;
     ;
     var Input = (function () {
         function Input() { }
-        Input.preventTouchDefault = false;
         Input.keyStates = new Array();
         Input.newKeyStates = new Array();
         Input.bufferKeyStates = new Array();
@@ -205,6 +206,13 @@ var SandLib;
             Input.mouseX = 0;
             Input.mouseY = 0;
         };
+        Input.clientToCanvasXY = function clientToCanvasXY(x, y) {
+            var rect = SandLib.Engine.canvas.getBoundingClientRect();
+            return {
+                x: x - rect.left,
+                y: y - rect.top
+            };
+        };
         Input.isMouseBtnDown = function isMouseBtnDown(button) {
             var b = Input.mouseBtns[button];
             if(b == null) {
@@ -256,35 +264,43 @@ var SandLib;
         function Engine() { }
         Engine.debugText = {
         };
-        Engine.debugTextCol = "#000000";
+        Engine.debugTextCol = "#FF0000";
         Engine.images = {
         };
         Engine.width = 0;
         Engine.height = 0;
         Engine.fillColor = "#AAAAAA";
-        Engine.lastUpdate = new Date();
+        Engine.hasTouchScreen = false;
+        Engine.lastUpdate = Date.now();
         Engine.timeInterval = 0;
         Engine.update = function update() {
-            var now = new Date();
-            Engine.timeInterval = (now.getTime() - Engine.lastUpdate.getTime()) / 1000;
-            Engine.lastUpdate = now;
+            Engine.timeInterval = (Date.now() - Engine.lastUpdate) / 1000;
+            Engine.lastUpdate = Date.now();
             SandLib.Input.update();
             Engine.currentScene.update();
             Engine.draw();
-            requestAnimationFrame(Engine.update);
+            if(window.requestAnimationFrame != null) {
+                requestAnimationFrame(Engine.update);
+            }
+            Engine.debugText["Interval"] = Engine.timeInterval.toString();
         };
-        Engine.init = function init(initialScene, canvas) {
+        Engine.init = function init(initialScene, canvas, fps) {
+            if (typeof fps === "undefined") { fps = 60; }
             Engine.currentScene = initialScene;
             Engine.canvas = canvas;
             Engine.context = canvas.getContext("2d");
             Engine.width = canvas.width;
             Engine.height = canvas.height;
+            if(!!("ontouchstart" in window) || !!("onmsgesturechange" in window)) {
+                Engine.hasTouchScreen = true;
+            }
             SandLib.Input.init();
             Engine.currentScene.init();
-            requestAnimationFrame(Engine.update);
-        };
-        Engine.initTouch = function initTouch() {
-            SandLib.Input.preventTouchDefault = true;
+            if(window.requestAnimationFrame != null) {
+                requestAnimationFrame(Engine.update);
+            } else {
+                setInterval(Engine.update, (1 / fps) * 1000);
+            }
         };
         Engine.getImage = function getImage(path) {
             var img = this.images[path];
@@ -298,6 +314,7 @@ var SandLib;
             return img;
         };
         Engine.setScene = function setScene(scene) {
+            Engine.currentScene.end();
             Engine.currentScene = scene;
             Engine.currentScene.init();
         };

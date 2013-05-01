@@ -12,6 +12,8 @@ var SandLib;
         }
         Scene.prototype.init = function () {
         };
+        Scene.prototype.end = function () {
+        };
         Scene.prototype.getAll = function (type, onScreenForce) {
             var returnArray = new Array();
             for(var i = 0; i < this.entities.length; i++) {

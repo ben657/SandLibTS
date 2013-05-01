@@ -42,8 +42,6 @@ module SandLib {
 
     export class Input {
 
-        private static preventTouchDefault:bool = false;
-
         private static keyStates: bool[] = new bool[];
         private static newKeyStates:bool[] = new bool[];
         private static bufferKeyStates:bool[] = new bool[];
@@ -120,6 +118,11 @@ module SandLib {
 
             mouseX = 0;
             mouseY = 0;
+        }
+
+        static clientToCanvasXY(x: number, y: number):Vector {
+            var rect: ClientRect = Engine.canvas.getBoundingClientRect();
+            return { x: x - rect.left, y: y - rect.top };
         }
 
         static isMouseBtnDown(button: number) {

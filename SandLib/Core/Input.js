@@ -5,7 +5,6 @@ var SandLib;
     ;
     var Input = (function () {
         function Input() { }
-        Input.preventTouchDefault = false;
         Input.keyStates = new Array();
         Input.newKeyStates = new Array();
         Input.bufferKeyStates = new Array();
@@ -76,6 +75,13 @@ var SandLib;
             addEventListener("mousemove", Input.mouseMove);
             Input.mouseX = 0;
             Input.mouseY = 0;
+        };
+        Input.clientToCanvasXY = function clientToCanvasXY(x, y) {
+            var rect = SandLib.Engine.canvas.getBoundingClientRect();
+            return {
+                x: x - rect.left,
+                y: y - rect.top
+            };
         };
         Input.isMouseBtnDown = function isMouseBtnDown(button) {
             var b = Input.mouseBtns[button];

@@ -49,8 +49,7 @@ module LD {
             }
 
             if (GameScene.moneyLbl.textCol.a > 0) {
-                GameScene.moneyLbl.textCol.a -= 0.02;
-                console.log(GameScene.moneyLbl.textCol.a);                
+                GameScene.moneyLbl.textCol.a -= 0.02;              
                 GameScene.moneyLbl.x = GameScene.player.x - 10;
                 if (GameScene.player.gravity < 0) {
                     GameScene.moneyLbl.y = GameScene.player.y + 50;

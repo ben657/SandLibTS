@@ -17,7 +17,7 @@ module LD {
                     SandLib.Engine.currentScene.remove(this);
                     GameScene.player.coins++;
                     GameScene.flashMoneyLbl();
-                    Main.coinSnd.play();
+                    Main.coinSnd.play();                    
                 }
             }
         }

@@ -10,10 +10,9 @@ module SandLib {
             super(x, y);
         }
 
-        update() {
-            super.update();
-            this.x += this.velocity.x * Engine.timeInterval;
-            this.y += this.velocity.y * Engine.timeInterval;
+        update() {            
+            this.x += this.velocity.x * SandLib.Engine.timeInterval;
+            this.y += this.velocity.y * SandLib.Engine.timeInterval;
         }
     }
 }

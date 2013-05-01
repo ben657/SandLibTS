@@ -8,10 +8,10 @@ module LD {
 
         cheatato: number[] = [32, 32, 16, 32, 16];
 
-        gravity: number = 40;
+        gravity: number = 2350;
         jumpPow: number = 1000;
         jumpBoost: number = 1.2;
-        accel: number = 0.05;
+        accel: number = 50;
         maxVel: number = 1500;
         decel: number = 20;
 
@@ -24,13 +24,12 @@ module LD {
         constructor(x: number, y: number) {
             super(x, y);
             this.image = SandLib.Engine.getImage("LD26/player.png");
-            this.image.width = this.image.height = 32;
+            //this.image.width = this.image.height = 32;            
             var hb: SandLib.HitBox = this.getHitBox();
             this.originX = hb.width / 2;
             this.originY = hb.height / 2;
             this.velocity.x = 300;
             SandLib.Input.registerCheat(this.cheatato, function {
-                console.log("potato");
                 GameScene.player.image = SandLib.Engine.getImage("LD26/potato.png");
             });
         }
@@ -39,15 +38,13 @@ module LD {
 
             //W:87 S:83 A:65 D:68
 
-            this.velocity.y += this.gravity;
-
-
             if (SandLib.Input.isKeyJustDown(16)) {
                 this.gravity *= -1;
                 this.jumpPow *= -1;
             }
 
-            this.velocity.x += this.accel;
+            this.velocity.y += this.gravity * SandLib.Engine.timeInterval;            
+            this.velocity.x += this.accel * SandLib.Engine.timeInterval;
 
             if (this.velocity.x > this.maxVel) {
                 this.velocity.x -= this.decel;
@@ -98,8 +95,7 @@ module LD {
 
             if (this.y > 800 || this.y < -800) {
                 this.die();
-            }
-
+            }            
             super.update();
         }
 

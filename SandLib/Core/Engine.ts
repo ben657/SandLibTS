@@ -88,7 +88,7 @@ module SandLib {
             Engine.currentScene.init();
         }
 
-        static normalizeVector(vector: Vector) {
+        static normalizeVector(vector: Vector):Vector {
             var length = Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2));
             if (length == 0) {
                 return { x: 0, y: 0 };

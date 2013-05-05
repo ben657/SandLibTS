@@ -13,6 +13,7 @@ module SandLib {
         rotation:number = 0;
         layer: number;
         image: HTMLImageElement;
+        scene: Scene;
 
         constructor(x: number, y: number) {
             this.x = x;

@@ -44,10 +44,26 @@
     <Content Include="LD26\Platform.js">
       <DependentUpon>Platform.ts</DependentUpon>
     </Content>
+    <TypeScriptCompile Include="Particles\Main.ts" />
+    <Content Include="Particles\Main.js">
+      <DependentUpon>Main.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="Particles\MainScene.ts" />
+    <Content Include="Particles\MainScene.js">
+      <DependentUpon>MainScene.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="Particles\Particle.ts" />
+    <Content Include="Particles\Particle.js">
+      <DependentUpon>Particle.ts</DependentUpon>
+    </Content>
     <Content Include="SandLib\Core\EntityMoving.js">
       <DependentUpon>EntityMoving.ts</DependentUpon>
     </Content>
     <TypeScriptCompile Include="SandLib\Core\HitBox.ts" />
+    <TypeScriptCompile Include="SandLib\Core\Graphic.ts" />
+    <Content Include="SandLib\Core\Graphic.js">
+      <DependentUpon>Graphic.ts</DependentUpon>
+    </Content>
     <Content Include="SandLib\Core\HitBox.js">
       <DependentUpon>HitBox.ts</DependentUpon>
     </Content>
@@ -125,7 +141,7 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" />
   <PropertyGroup>
-    <PostBuildEvent>tsc --out "$(ProjectDir)Release\LD26.js" "$(ProjectDir)LD26/Main.ts
+    <PostBuildEvent>tsc --out "$(ProjectDir)Release\Particles.js" "$(ProjectDir)Particles/Main.ts
 tsc --out "$(ProjectDir)Release\SandLib.js" "$(ProjectDir)SandLib\Core\Engine.ts</PostBuildEvent>
   </PropertyGroup>
 </Project>

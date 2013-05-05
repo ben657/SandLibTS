@@ -10,6 +10,7 @@ var SandLib;
         Input.bufferKeyStates = new Array();
         Input.bufferNewKeyStates = new Array();
         Input.mouseBtns = new Array();
+        Input.lastMouseBtns = new Array();
         Input.newMouseBtns = new Array();
         Input.bufferMouseBtns = new Array();
         Input.bufferNewMouseBtns = new Array();
@@ -57,15 +58,31 @@ var SandLib;
             Input.bufferMouseBtns[event.button] = false;
         };
         Input.mouseDown = function mouseDown(event) {
+            event.preventDefault();
             if(Input.mouseBtns[event.button] == false || Input.mouseBtns[event.button] == null) {
                 Input.bufferNewMouseBtns[event.button] = true;
             }
             Input.bufferMouseBtns[event.button] = true;
         };
         Input.mouseMove = function mouseMove(event) {
+            event.preventDefault();
             var rect = SandLib.Engine.canvas.getBoundingClientRect();
-            Input.mouseX = event.clientX - rect.left;
-            Input.mouseY = event.clientY - rect.top;
+            var x = event.clientX - rect.left;
+            var y = event.clientY - rect.top;
+            if(x < 0) {
+                x = 0;
+            }
+            if(x > SandLib.Engine.width) {
+                x = SandLib.Engine.width;
+            }
+            if(y < 0) {
+                y = 0;
+            }
+            if(y > SandLib.Engine.height) {
+                y = SandLib.Engine.height;
+            }
+            Input.mouseX = x;
+            Input.mouseY = y;
         };
         Input.init = function init() {
             addEventListener("keydown", Input.keyDown);
@@ -97,6 +114,14 @@ var SandLib;
             }
             return b;
         };
+        Input.isMouseBtnJustUp = function isMouseBtnJustUp(button) {
+            var bNow = Input.mouseBtns[button];
+            var bLas = Input.lastMouseBtns[button];
+            if((bNow == false || bNow == null) && bLas == true) {
+                return true;
+            }
+            return false;
+        };
         Input.isKeyDown = function isKeyDown(keyCode) {
             var b = Input.keyStates[keyCode];
             if(b == null) {
@@ -120,6 +145,7 @@ var SandLib;
             Input.keyStates = Input.bufferKeyStates;
             Input.newKeyStates = Input.bufferNewKeyStates;
             Input.bufferNewKeyStates = new Array();
+            Input.lastMouseBtns = Input.mouseBtns;
             Input.mouseBtns = Input.bufferMouseBtns;
             Input.newMouseBtns = Input.bufferNewMouseBtns;
             Input.bufferNewMouseBtns = new Array();

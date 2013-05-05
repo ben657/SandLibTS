@@ -48,6 +48,7 @@ module SandLib {
         private static bufferNewKeyStates: bool[] = new bool[];
 
         private static mouseBtns: bool[] = new bool[];
+        private static lastMouseBtns:bool[] = new bool[];
         private static newMouseBtns: bool[] = new bool[];
         private static bufferMouseBtns: bool[] = new bool[];
         private static bufferNewMouseBtns: bool[] = new bool[];
@@ -97,16 +98,24 @@ module SandLib {
         }
 
         private static mouseDown(event: MouseEvent) {
+            event.preventDefault();
             if (Input.mouseBtns[event.button] == false || Input.mouseBtns[event.button] == null) {
                 Input.bufferNewMouseBtns[event.button] = true;
             }
             Input.bufferMouseBtns[event.button] = true;            
         }
 
-        private static mouseMove(event: MouseEvent) {            
+        private static mouseMove(event: MouseEvent) {
+            event.preventDefault();
             var rect: ClientRect = Engine.canvas.getBoundingClientRect();
-            Input.mouseX = event.clientX - rect.left;
-            Input.mouseY = event.clientY - rect.top;            
+            var x = event.clientX - rect.left;
+            var y = event.clientY - rect.top;
+            if (x < 0) { x = 0; }
+            if (x > Engine.width) { x = Engine.width; }
+            if (y < 0) { y = 0; }
+            if (y > Engine.height) { y = Engine.height; }
+            Input.mouseX = x;
+            Input.mouseY = y;
         }    
 
         static init() {
@@ -141,6 +150,15 @@ module SandLib {
             return b;
         }
 
+        static isMouseBtnJustUp(button: number) {
+            var bNow: bool = Input.mouseBtns[button];
+            var bLas: bool = Input.lastMouseBtns[button];
+            if ((bNow == false || bNow == null) && bLas == true) {
+                return true;
+            }
+            return false;
+        }
+
         static isKeyDown(keyCode: number) {
             var b: bool = keyStates[keyCode];
             if (b == null) {
@@ -168,6 +186,7 @@ module SandLib {
             newKeyStates = bufferNewKeyStates;
             bufferNewKeyStates = new bool[];
 
+            lastMouseBtns = mouseBtns;
             mouseBtns = bufferMouseBtns;
             newMouseBtns = bufferNewMouseBtns;
             bufferNewMouseBtns = new bool[];            

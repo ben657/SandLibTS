@@ -379,3 +379,192 @@ var SandLib;
     })();
     SandLib.Engine = Engine;    
 })(SandLib || (SandLib = {}));
+var __extends = this.__extends || function (d, b) {
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var SandLib;
+(function (SandLib) {
+    var EntityMoving = (function (_super) {
+        __extends(EntityMoving, _super);
+        function EntityMoving(x, y) {
+                _super.call(this, x, y);
+            this.velocity = {
+                x: 0,
+                y: 0
+            };
+        }
+        EntityMoving.prototype.update = function () {
+            this.x += this.velocity.x * SandLib.Engine.timeInterval;
+            this.y += this.velocity.y * SandLib.Engine.timeInterval;
+        };
+        return EntityMoving;
+    })(SandLib.Entity);
+    SandLib.EntityMoving = EntityMoving;    
+})(SandLib || (SandLib = {}));
+var Particles;
+(function (Particles) {
+    var Particle = (function (_super) {
+        __extends(Particle, _super);
+        function Particle(x, y) {
+                _super.call(this, x, y);
+            this.decel = 50;
+            this.speed = 0;
+            this.edgeBuffer = 5;
+            this.speed = Math.random() * 150 + 50;
+            this.velocity.x = Math.random() * 2 - 1;
+            this.velocity.y = Math.random() * 2 - 1;
+            var color = {
+                r: 255,
+                g: 255,
+                b: 255,
+                a: 1
+            };
+            this.imageDat = SandLib.Engine.context.createImageData(2, 2);
+            for(var i = 0; i < this.imageDat.data.length; i += 4) {
+                this.imageDat.data[i] = color.r;
+                this.imageDat.data[i + 1] = color.g;
+                this.imageDat.data[i + 2] = color.b;
+                this.imageDat.data[i + 3] = color.a;
+            }
+        }
+        Particle.prototype.update = function () {
+            var s = this.scene;
+            if(s.mode != s.M_PLACE) {
+                var vec = {
+                    x: 0,
+                    y: 0
+                };
+                vec.x = this.x - s.actionPoint.x;
+                vec.y = this.y - s.actionPoint.y;
+                var distance = Math.sqrt(vec.x * vec.x + vec.y * vec.y);
+                var d2 = Math.pow(distance, 2);
+                if(s.mode == s.M_REPEL) {
+                    this.velocity.x += (vec.x / d2) * s.actionPower;
+                    this.velocity.y += (vec.y / d2) * s.actionPower;
+                }
+                if(s.mode == s.M_ATTRACT) {
+                    this.velocity.x -= (vec.x / d2) * s.actionPower;
+                    this.velocity.y -= (vec.y / d2) * s.actionPower;
+                }
+            }
+            this.velocity = SandLib.Engine.normalizeVector(this.velocity);
+            this.velocity.x *= this.speed;
+            this.velocity.y *= this.speed;
+            if(this.x < -this.edgeBuffer || this.y < -this.edgeBuffer || this.x > SandLib.Engine.width + this.edgeBuffer || this.y > SandLib.Engine.height + this.edgeBuffer) {
+                this.scene.remove(this);
+                console.log("removed");
+            }
+            if(this.x < 0) {
+                this.x = 0;
+                this.velocity.x *= -1;
+            }
+            if(this.y < 0) {
+                this.y = 0;
+                this.velocity.y *= -1;
+            }
+            if(this.x > SandLib.Engine.width) {
+                this.x = SandLib.Engine.width - 2;
+                this.velocity.x *= -1;
+            }
+            if(this.y > SandLib.Engine.height) {
+                this.y = SandLib.Engine.height - 2;
+                this.velocity.y *= -1;
+            }
+            _super.prototype.update.call(this);
+        };
+        Particle.prototype.draw = function () {
+            SandLib.Engine.context.putImageData(this.imageDat, this.x, this.y);
+        };
+        return Particle;
+    })(SandLib.EntityMoving);
+    Particles.Particle = Particle;    
+})(Particles || (Particles = {}));
+var Particles;
+(function (Particles) {
+    var MainScene = (function (_super) {
+        __extends(MainScene, _super);
+        function MainScene() {
+                _super.call(this);
+            this.M_PLACE = 0;
+            this.M_ATTRACT = 1;
+            this.M_REPEL = 2;
+            this.mode = 0;
+            this.actionPoint = null;
+            this.actionPower = 10000;
+            this.particles = 0;
+            this.downLast = false;
+        }
+        MainScene.prototype.addParticles = function (amount, x, y) {
+            for(var i = 0; i < amount; i++) {
+                this.add(new Particles.Particle(x, y));
+                this.particles++;
+            }
+        };
+        MainScene.prototype.touchMove = function (event) {
+            event.preventDefault();
+            var s = SandLib.Engine.currentScene;
+            for(var i = 0; i < event.touches.length; i++) {
+                var touch = event.touches.item(i);
+                var pos = SandLib.Input.clientToCanvasXY(touch.clientX, touch.clientY);
+                s.addParticles(5, pos.x, pos.y);
+            }
+        };
+        MainScene.prototype.init = function () {
+            addEventListener("touchmove", this.touchMove);
+            this.addParticles(1, 10, 10);
+        };
+        MainScene.prototype.update = function () {
+            _super.prototype.update.call(this);
+            SandLib.Engine.debugText["Particles"] = this.particles;
+            SandLib.Engine.debugText["Mode"] = this.mode;
+            if(SandLib.Input.isMouseBtnDown(SandLib.Input.MOUSE_LEFT)) {
+                switch(this.mode) {
+                    case this.M_PLACE:
+                        this.addParticles(5, SandLib.Input.mouseX, SandLib.Input.mouseY);
+                        break;
+                }
+            } else {
+                this.actionPoint = null;
+            }
+            if(SandLib.Input.isKeyJustDown(49)) {
+                this.mode = this.M_PLACE;
+            }
+            if(SandLib.Input.isKeyJustDown(50)) {
+                this.mode = this.M_REPEL;
+            }
+            if(SandLib.Input.isKeyJustDown(51)) {
+                this.mode = this.M_ATTRACT;
+            }
+            this.actionPoint = {
+                x: SandLib.Input.mouseX,
+                y: SandLib.Input.mouseY
+            };
+        };
+        return MainScene;
+    })(SandLib.Scene);
+    Particles.MainScene = MainScene;    
+})(Particles || (Particles = {}));
+var Particles;
+(function (Particles) {
+    var Main = (function () {
+        function Main() {
+            var canvas = document.createElement("canvas");
+            canvas.width = document.documentElement.clientWidth;
+            canvas.height = document.documentElement.clientHeight;
+            canvas.innerText = "Canvas not supported.";
+            document.body.appendChild(canvas);
+            SandLib.Engine.fillColor = "#000000";
+            SandLib.Engine.debugTextCol = "#FF0000";
+            SandLib.Engine.init(new Particles.MainScene(), canvas);
+        }
+        Main.jumpSnd = new Audio("LD26/jump.mp3");
+        Main.landSnd = new Audio("LD26/land.mp3");
+        Main.coinSnd = new Audio("LD26/coin.mp3");
+        Main.mainSnd = new Audio("LD26/main.mp3");
+        return Main;
+    })();
+    Particles.Main = Main;    
+})(Particles || (Particles = {}));
+new Particles.Main();

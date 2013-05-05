@@ -39,6 +39,7 @@ module SandLib {
         }
 
         add(entity: Entity) {
+            entity.scene = this;
             this.entities[this.entities.length] = entity;
         }
 

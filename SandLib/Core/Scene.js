@@ -30,6 +30,7 @@ var SandLib;
             return returnArray;
         };
         Scene.prototype.add = function (entity) {
+            entity.scene = this;
             this.entities[this.entities.length] = entity;
         };
         Scene.prototype.remove = function (entity) {
